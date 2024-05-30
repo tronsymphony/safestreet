@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { GoogleMap, LoadScript, Polyline, DrawingManager, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
 import Modal from 'react-modal';
 import { customMapStyles } from "./customMapStyles";
@@ -59,16 +59,19 @@ export default function GMapDraw() {
 
     const directionsCallback = useCallback((result, status) => {
         if (status === 'OK' && result) {
-                if (directionsResponsesUpdate == false) {
-                    console.log(directionsResponsesUpdate)
-                    setDirectionsResponses([result]);
-                    setDirectionsResponsesUpdated(true)
+            if (directionsResponsesUpdate == false) {
+                console.log(directionsResponsesUpdate)
+                setDirectionsResponses([result]);
+                setDirectionsResponsesUpdated(true)
 
-                }
+            }
         } else {
             console.error('error fetching directions', result, status);
         }
     }, [directionsResponsesUpdate]);
+
+
+
 
     return (
         <>
@@ -94,6 +97,7 @@ export default function GMapDraw() {
                             }}
                         />
                     ))}
+                    
                     {mapLoaded && (
                         <DrawingManager
                             onOverlayComplete={onOverlayComplete}
@@ -105,7 +109,7 @@ export default function GMapDraw() {
                                 },
                                 polylineOptions: {
                                     strokeColor: '#000',
-                                    strokeWeight: 2,
+                                    strokeWeight: 1,
                                     strokeOpacity: 0.2,
                                     editable: true,
                                 },

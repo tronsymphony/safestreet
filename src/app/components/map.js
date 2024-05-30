@@ -72,7 +72,6 @@ export default function GMap() {
         setModalIsOpen(false);
     };
 
-
     const handleMapClick = (event) => {
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
@@ -81,8 +80,42 @@ export default function GMap() {
         setModalIsOpen(true);
     };
 
+    const fetchData = async () => {
+        try {
+            const response = await fetch('http://localhost:3001/api/getroutes', {
+                method: 'GET',
+            });
+            const data = await response.json();
+            // const formattedRoutes = data.routes.map(route => ({
+            //     routes: route.routes.map(coord => ({
+            //       lat: coord.lat,
+            //       lng: coord.lng
+            //     }))
+            //   }));
+            setDirectionsResponses(data.routes || []);
+            console.log(data.routes)
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
     return (
         <>
+
+            {Array.isArray(directionsResponses) && directionsResponses.length > 0 ? (
+                <div>
+                    {directionsResponses.map((route, index) => (
+                        <pre key={index}>{JSON.stringify(route, null, 2)}</pre>
+                    ))}
+                </div>
+            ) : (
+                <p>No routes available</p>
+            )}
             <LoadScript googleMapsApiKey={API_KEY}>
                 <GoogleMap
                     center={{ lat: 33.979215019959895, lng: -118.46648985815806 }}
@@ -90,52 +123,83 @@ export default function GMap() {
                     mapContainerStyle={{ height: '80vh', width: '100%' }}
                     options={mapOptions}
                     onLoad={onLoad}
-                    onClick={handleMapClick}
+                // onClick={handleMapClick}
                 >
-                    {routes.map((route, index) => (
-                        <React.Fragment key={index}>
 
-                            <DirectionsService
+                     {directionsResponses.map((route, index) => {
+                        if (!Array.isArray(route.routes) || route.routes.length < 2) {
+                            console.error(`Invalid route data at index ${index}`, route);
+                            return null; // Skip if there are less than two points or data is invalid
+                        }
+
+                        const waypoints = route.routes.slice(1, -1).map(point => {
+                            if (typeof point.lat !== 'number' || typeof point.lng !== 'number') {
+                                console.error(`Invalid waypoint at index ${index}`, point);
+                            }
+                            return {
+                                location: { lat: point.lat, lng: point.lng },
+                                stopover: true,
+                            };
+                        });
+
+                        const origin = { lat: route.routes[0].lat, lng: route.routes[0].lng };
+                        const destination = { lat: route.routes[route.routes.length - 1].lat, lng: route.routes[route.routes.length - 1].lng };
+
+                        if (typeof origin.lat !== 'number' || typeof origin.lng !== 'number' || 
+                            typeof destination.lat !== 'number' || typeof destination.lng !== 'number') {
+                            console.error(`Invalid origin or destination at index ${index}`, { origin, destination });
+                            return null; // Skip if origin or destination is invalid
+                        }
+
+                        const options = {
+                            destination: destination,
+                            origin: origin,
+                            waypoints: waypoints,
+                            travelMode: 'BICYCLING',
+                        };
+
+                        return (
+                            <React.Fragment key={index}>
+                                {options && options.origin && options.destination && (
+                                    <DirectionsService
+                                        options={options}
+                                        callback={directionsCallback}
+                                    />
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
+
+
+
+
+
+                    {directionsResponses.map((route, index) => (
+                        <React.Fragment key={index}>
+                            <Polyline
+                                path={route.routes.map(point => ({ lat: point.lat, lng: point.lng }))}
                                 options={{
-                                    destination: route.destination,
-                                    origin: route.origin,
-                                    waypoints: route.waypoints,
-                                    travelMode: 'BICYCLING',
+                                    strokeColor: '#FF0000', // Shadow color (use a fixed color or add color to your route data)
+                                    strokeOpacity: 0.2, // Shadow opacity
+                                    strokeWeight: 5, // Shadow weight (larger than main line)
                                 }}
-                                callback={directionsCallback}
+                                onClick={(e) => handlePolylineClick(e.latLng.lat(), e.latLng.lng())}
+                            />
+
+                            <Polyline
+                                path={route.routes.map(point => ({ lat: point.lat, lng: point.lng }))}
+                                options={{
+                                    strokeColor: '#FF0000', // Main color (use a fixed color or add color to your route data)
+                                    strokeOpacity: 0.7,
+                                    strokeWeight: 2,
+                                }}
+                                onClick={(e) => handlePolylineClick(e.latLng.lat(), e.latLng.lng())}
                             />
                         </React.Fragment>
                     ))}
-                    {directionsResponses.map((directions, index) => (
-                        <React.Fragment key={index}>
-                            {directions.routes[0].legs.map((leg, legIndex) =>
-                                leg.steps.map((step, stepIndex) => (
-                                    <React.Fragment key={stepIndex}>
-                                        {/* Shadow Polyline */}
-                                        <Polyline
-                                            path={step.path}
-                                            options={{
-                                                strokeColor: routes[index].color,// Shadow color
-                                                strokeOpacity: 0.2, // Shadow opacity
-                                                strokeWeight: 5, // Shadow weight (larger than main line)
-                                            }}
-                                            onClick={(e) => handlePolylineClick(e.latLng.lat(), e.latLng.lng())}
-                                        />
-                                        {/* Main Polyline */}
-                                        <Polyline
-                                            path={step.path}
-                                            options={{
-                                                strokeColor: routes[index].color,
-                                                strokeOpacity: .7,
-                                                strokeWeight: 1,
-                                            }}
-                                            onClick={(e) => handlePolylineClick(e.latLng.lat(), e.latLng.lng())}
-                                        />
-                                    </React.Fragment>
-                                ))
-                            )}
-                        </React.Fragment>
-                    ))}
+
+
+
                 </GoogleMap>
             </LoadScript>
 
