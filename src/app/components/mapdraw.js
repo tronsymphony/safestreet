@@ -45,6 +45,8 @@ export default function GMapDraw() {
         if (newShape.type === 'polyline') {
             const path = newShape.getPath().getArray().map(coord => ({ lat: coord.lat(), lng: coord.lng() }));
             setWaypoints(path);
+
+            console.log('New polyline created with path:', path);
         }
     };
 
@@ -86,7 +88,7 @@ export default function GMapDraw() {
                                 polylineOptions: {
                                     strokeColor: '#FF5733',
                                     strokeOpacity: 0.7,
-                                    strokeWeight: 2,
+                                    strokeWeight: 1,
                                     editable: true,
                                 },
                             }}
@@ -102,8 +104,9 @@ export default function GMapDraw() {
                                     drawingModes: ['polyline'], // Only allow drawing polylines
                                 },
                                 polylineOptions: {
-                                    strokeColor: '#696969',
+                                    strokeColor: '#000',
                                     strokeWeight: 2,
+                                    strokeOpacity: 0.2,
                                     editable: true,
                                 },
                             }}
@@ -133,6 +136,10 @@ export default function GMapDraw() {
                 <pre style={{ color: 'black' }}>{JSON.stringify(modalContent, null, 2)}</pre>
                 <button onClick={closeModal}>Close</button>
             </Modal>
+
+            <button onClick={clearMap} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10' }}>
+                Clear Drawing
+            </button>
 
             <button onClick={clearMap} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10' }}>
                 Clear Drawing
