@@ -39,18 +39,27 @@ export default function GMapDraw() {
         setModalIsOpen(false);
     };
 
+    const updateWaypoints = (path) => {
+        const updatedPath = path.getArray().map(coord => ({ lat: coord.lat(), lng: coord.lng() }));
+        setWaypoints(updatedPath);
+        setDirectionsResponsesUpdated(false); // Reset to allow new directions fetch
+    };
+
     const onOverlayComplete = (e) => {
         const newShape = e.overlay;
         newShape.type = e.type;
+        setDrawnShapes((prevShapes) => [...prevShapes, newShape]);
+
+
         if (newShape.type === 'polyline') {
             const path = newShape.getPath().getArray().map(coord => ({ lat: coord.lat(), lng: coord.lng() }));
             setWaypoints(path);
-
             console.log('New polyline created with path:', path);
         }
     };
 
     const clearMap = () => {
+        drawnShapes.forEach(shape => shape.setMap(null)); // Remove all shapes from the map
         setDrawnShapes([]);
         setWaypoints([]);
         setDirectionsResponses([]);
@@ -85,7 +94,7 @@ export default function GMapDraw() {
                 >
                     {directionsResponses.map((directions, index) => (
                         <DirectionsRenderer
-                            key={index}
+                            key={`directions-${index}`}
                             directions={directions}
                             options={{
                                 polylineOptions: {
@@ -108,21 +117,28 @@ export default function GMapDraw() {
                                     drawingModes: ['polyline'], // Only allow drawing polylines
                                 },
                                 polylineOptions: {
-                                    strokeColor: '#000',
-                                    strokeWeight: 1,
-                                    strokeOpacity: 0.2,
+                                    strokeColor: '#FF0000',
+                                    strokeOpacity: 1.0,
+                                    strokeWeight: 3,
+                                    clickable: true,
+                                    zIndex: 1,
                                     editable: true,
-                                },
+                                    draggable: true
+                                  },
                             }}
                         />
                     )}
+
                     {waypoints.length >= 2 && (
                         <DirectionsService
                             options={{
                                 origin: waypoints[0],
                                 destination: waypoints[waypoints.length - 1],
                                 waypoints: waypoints.slice(1, waypoints.length - 1).map(location => ({ location })),
-                                travelMode: 'BICYCLING',
+                                travelMode: 'TWO_WHEELER',
+                                optimizeWaypoints: true,
+                                
+
                             }}
                             callback={directionsCallback}
                         />
@@ -144,10 +160,7 @@ export default function GMapDraw() {
             <button onClick={clearMap} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10' }}>
                 Clear Drawing
             </button>
-
-            <button onClick={clearMap} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10' }}>
-                Clear Drawing
-            </button>
+          
         </>
     );
 }
