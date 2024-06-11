@@ -11,7 +11,35 @@ const MapboxDrawComponent = () => {
     const mapContainerRef = useRef(null);
     const [map, setMap] = useState(null);
     const [draw, setDraw] = useState(null);
+    const [routesData, setRoutesData] = useState([]);
     const directionsClient = MapboxDirections({ accessToken: mapboxgl.accessToken });
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch('http://localhost:3001/api/getroutes', {
+                method: 'GET',
+            });
+            const data = await response.json();
+            setRoutesData(data)
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+
+    const parseCoordinates = (str) => {
+        const matches = str.match(/\[.*\]/);
+        if (matches && matches.length > 0) {
+            const coordinatesArray = JSON.parse(matches[0]);
+            return coordinatesArray;
+        }
+        return [];
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     useEffect(() => {
         const initializeMap = ({ setMap, mapContainer }) => {
@@ -45,6 +73,7 @@ const MapboxDrawComponent = () => {
                 if (data.features.length > 0) {
                     const coordinates = data.features[0].geometry.coordinates;
                     if (coordinates.length >= 2) {
+                        console.log('Updated route coordinates:', coordinates);
                         getRoute(coordinates);
                     }
                 }
@@ -84,26 +113,31 @@ const MapboxDrawComponent = () => {
             }
 
             function loadMultipleRoutes() {
-                const routes = [
-                    {
-                        waypoints: [
-                            [-118.46648985815806, 33.979215019959895],
-                            [-118.46346421565953, 33.98102090537734]
-                        ]
-                    },
-                    {
-                        waypoints: [
-                            [-118.46451580173542, 33.978387564383326],
-                            [-118.45548904936349, 33.96614642009822]
-                        ]
-                    }
-                ];
+                // const routes = [
+                //     {
+                //         waypoints: [
+                //             [-118.46648985815806, 33.979215019959895],
+                //             [-118.46346421565953, 33.98102090537734]
+                //         ]
+                //     },
+                //     {
+                //         waypoints: [
+                //             [-118.46451580173542, 33.978387564383326],
+                //             [-118.45548904936349, 33.96614642009822]
+                //         ]
+                //     }
+                // ];
+                console.log(routesData)
+                routesData.routes?.forEach((route, index) => {
 
-                routes.forEach((route, index) => {
-                    const waypoints = route.waypoints.map(coord => ({
+                    const coordinates = parseCoordinates(route.routes);
+
+                    const waypoints = coordinates.map(coord => ({
                         coordinates: coord,
                     }));
-                    console.log(`Route ${index + 1} waypoints:`, waypoints);
+
+                   
+
                     directionsClient.getDirections({
                         profile: 'driving',
                         geometries: 'geojson',
@@ -113,6 +147,7 @@ const MapboxDrawComponent = () => {
                         .then(response => {
                             const route = response.body.routes[0].geometry;
                             const routeId = `route-${index}`;
+
                             map.addSource(routeId, {
                                 type: 'geojson',
                                 data: route,
@@ -126,7 +161,7 @@ const MapboxDrawComponent = () => {
                                     'line-cap': 'round',
                                 },
                                 paint: {
-                                    'line-color': `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+                                    'line-color': `#444`,
                                     'line-width': 5,
                                     'line-opacity': 0.75,
                                 },
@@ -173,7 +208,7 @@ const MapboxDrawComponent = () => {
 
         if (!map) initializeMap({ setMap, mapContainer: mapContainerRef });
 
-    }, [map]);
+    }, [map, routesData]);
 
     return <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />;
 };

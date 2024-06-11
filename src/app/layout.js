@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "./globals.scss";
+import Link from 'next/link'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -11,7 +12,34 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>My Next.js App</title>
+      </head>
+      <body className={inter.className}>
+      <header className="main-header">
+        <div className="container">
+          <div className="logo"><Link href="/">Safe Streets Map</Link></div>
+          <nav className="nav">
+          <ul>
+            <li><Link href="/about">About</Link></li>
+            <li><Link href="/">Map</Link></li>
+            <li><Link href="/">Press</Link></li>
+          </ul>
+        </nav>
+        </div>
+       
+      </header>
+        <div className="content">
+        {children}
+        </div>
+        <footer>
+          <div className="container">
+          <p>&copy; {new Date().getFullYear()} My Next.js App</p>
+          </div>
+        </footer>
+      </body>
     </html>
   );
 }

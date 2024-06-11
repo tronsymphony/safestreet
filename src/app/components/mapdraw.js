@@ -106,7 +106,7 @@ export default function GMapDraw() {
                             }}
                         />
                     ))}
-                    
+
                     {mapLoaded && (
                         <DrawingManager
                             onOverlayComplete={onOverlayComplete}
@@ -124,7 +124,7 @@ export default function GMapDraw() {
                                     zIndex: 1,
                                     editable: true,
                                     draggable: true
-                                  },
+                                },
                             }}
                         />
                     )}
@@ -137,7 +137,7 @@ export default function GMapDraw() {
                                 waypoints: waypoints.slice(1, waypoints.length - 1).map(location => ({ location })),
                                 travelMode: 'TWO_WHEELER',
                                 optimizeWaypoints: true,
-                                
+
 
                             }}
                             callback={directionsCallback}
@@ -160,7 +160,7 @@ export default function GMapDraw() {
             <button onClick={clearMap} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10' }}>
                 Clear Drawing
             </button>
-          
+
         </>
     );
 }
