@@ -20,7 +20,7 @@ const MapboxDrawComponent = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/getroutes', {
+            const response = await fetch('http://localhost:3000/api/getroutes', {
                 method: 'GET',
             });
             const data = await response.json();
