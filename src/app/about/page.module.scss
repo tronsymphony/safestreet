@@ -1,0 +1,28 @@
+.fold{
+    padding: 6rem 0;
+    display: flex;
+    text-align: center;
+}
+
+.aboutsite{
+    padding: 2rem 0;
+
+    .blockcontainer{
+        display: grid;
+        gap: 4rem;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        margin: 4rem 0;
+    }
+    .block{
+        padding: 2rem;
+    }
+    img{
+        width: 100%;
+    }
+}
+
+section.contantpress {
+    padding: 3rem;
+    display: flex;
+}

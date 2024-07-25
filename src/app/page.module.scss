@@ -1,4 +1,15 @@
+.logo {
+  a {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.4rem;
+  }
 
+  span {
+    width: 60px;
+  }
+}
 
 .description {
   display: inherit;
@@ -101,6 +112,7 @@
 .logo {
   position: relative;
 }
+
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
   .card:hover {
@@ -172,11 +184,9 @@
     border-radius: 0;
     border: none;
     border-bottom: 1px solid rgba(var(--callout-border-rgb), 0.25);
-    background: linear-gradient(
-      to bottom,
-      rgba(var(--background-start-rgb), 1),
-      rgba(var(--callout-rgb), 0.5)
-    );
+    background: linear-gradient(to bottom,
+        rgba(var(--background-start-rgb), 1),
+        rgba(var(--callout-rgb), 0.5));
     background-clip: padding-box;
     backdrop-filter: blur(24px);
   }
@@ -187,11 +197,9 @@
     inset: auto 0 0;
     padding: 2rem;
     height: 200px;
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      rgb(var(--background-end-rgb)) 40%
-    );
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        rgb(var(--background-end-rgb)) 40%);
     z-index: 1;
   }
 }
@@ -209,7 +217,7 @@
   }
 
   .logo {
-    filter: invert(1) drop-shadow(0 0 0.3rem #ffffff70);
+    // filter: invert(1) drop-shadow(0 0 0.3rem #ffffff70);
   }
 }
 
@@ -217,7 +225,82 @@
   from {
     transform: rotate(360deg);
   }
+
   to {
     transform: rotate(0deg);
+  }
+}
+
+
+.pagehero {
+  height: 270px;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  justify-content: space-around;
+  position: relative;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  background: #000;
+
+  h2 {
+    color: #fff;
+    font-size: 60px;
+  }
+
+  p {
+    color: #fff;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+  }
+
+  img {
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+    object-position: center;
+    opacity: 0.3;
+  }
+
+  .container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+
+
+}
+
+
+
+section.pageright {
+  padding: 90px 0;
+
+  .pagerighttricolumns {
+    display: flex;
+    gap: 6rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .pagerightbtn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4rem;
+  }
+
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 6rem;
   }
 }

@@ -1,11 +1,9 @@
 'use client'
 // components/MapboxDrawComponent.js
-// components/MapboxDrawComponent.js
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import MapboxDirections from '@mapbox/mapbox-sdk/services/directions';
-import Modal from './Modal';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoibml0eWFob3lvcyIsImEiOiJjbGZ0N203ODQwNXBiM3FvbXhvd3UwcDcxIn0.auRwB9upsB10y6hEnczwAA';
 
@@ -14,8 +12,6 @@ const MapboxDrawComponent = () => {
     const [map, setMap] = useState(null);
     const [draw, setDraw] = useState(null);
     const [routesData, setRoutesData] = useState([]);
-    const [modalContent, setModalContent] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const directionsClient = MapboxDirections({ accessToken: mapboxgl.accessToken });
 
     const fetchData = async () => {
@@ -24,11 +20,13 @@ const MapboxDrawComponent = () => {
                 method: 'GET',
             });
             const data = await response.json();
-            setRoutesData(data);
+            setRoutesData(data)
+
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
+
 
     const parseCoordinates = (str) => {
         const matches = str.match(/\[.*\]/);
@@ -63,7 +61,7 @@ const MapboxDrawComponent = () => {
                 defaultMode: 'draw_line_string',
             });
 
-            // map.addControl(draw);
+            map.addControl(draw);
             setDraw(draw);
 
             map.on('draw.create', updateRoute);
@@ -115,12 +113,30 @@ const MapboxDrawComponent = () => {
             }
 
             function loadMultipleRoutes() {
-                console.log(routesData);
+                // const routes = [
+                //     {
+                //         waypoints: [
+                //             [-118.46648985815806, 33.979215019959895],
+                //             [-118.46346421565953, 33.98102090537734]
+                //         ]
+                //     },
+                //     {
+                //         waypoints: [
+                //             [-118.46451580173542, 33.978387564383326],
+                //             [-118.45548904936349, 33.96614642009822]
+                //         ]
+                //     }
+                // ];
+                console.log(routesData)
                 routesData.routes?.forEach((route, index) => {
+
                     const coordinates = parseCoordinates(route.routes);
+
                     const waypoints = coordinates.map(coord => ({
                         coordinates: coord,
                     }));
+
+                   
 
                     directionsClient.getDirections({
                         profile: 'driving',
@@ -149,28 +165,6 @@ const MapboxDrawComponent = () => {
                                     'line-width': 5,
                                     'line-opacity': 0.75,
                                 },
-                            });
-
-                            map.on('click', routeId, (e) => {
-                                const clickedCoordinates = e.features[0].geometry.coordinates;
-                                const content = (
-                                    <div>
-                                        <h3>Route {index + 1}</h3>
-                                        <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
-                                    </div>
-                                );
-                                setModalContent(content);
-                                setIsModalOpen(true);
-                            });
-
-                            map.on('mouseenter', routeId, () => {
-                                map.getCanvas().style.cursor = 'pointer';
-                                map.setPaintProperty(routeId, 'line-color', '#ff0000');
-                            });
-
-                            map.on('mouseleave', routeId, () => {
-                                map.getCanvas().style.cursor = '';
-                                map.setPaintProperty(routeId, 'line-color', '#444');
                             });
                         })
                         .catch(err => {
@@ -214,18 +208,9 @@ const MapboxDrawComponent = () => {
 
         if (!map) initializeMap({ setMap, mapContainer: mapContainerRef });
 
-    }, [map, routesData,directionsClient]);
+    }, [map, routesData]);
 
-    return (
-        <>
-            <section className="main-map">
-                <div className="container">
-                    <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
-                </div>
-            </section>
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
-        </>
-    );
+    return <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />;
 };
 
 export default MapboxDrawComponent;

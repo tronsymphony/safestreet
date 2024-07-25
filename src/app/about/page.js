@@ -1,20 +1,93 @@
 // app/about/page.js
-import Head from 'next/head';
-
+import Head from "next/head";
+import styles from "./page.module.scss";
 export default function AboutPage() {
-    return (
-        <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-
-            <main>
-                <h1 style={{ color: '#333' }}>About Us</h1>
-                <p style={{ color: '#666' }}>Welcome to our website! We are a passionate team dedicated to providing the best services to our customers.</p>
-                <h2 style={{ color: '#333' }}>Our Mission</h2>
-                <p style={{ color: '#666' }}>Our mission is to create innovative solutions that improve the lives of our users.</p>
-                <h2 style={{ color: '#333' }}>Our Team</h2>
-                <p style={{ color: '#666' }}>We are a group of professionals with diverse backgrounds and expertise, working together to achieve our common goals.</p>
-                <h2 style={{ color: '#333' }}>Contact Us</h2>
-                <p style={{ color: '#666' }}>If you have any questions or would like to learn more about our work, feel free to <a href="/contact" style={{ color: 'blue' }}>contact us</a>.</p>
-            </main>
-        </div>
-    );
+  return (
+    <div>
+      <main>
+        <section className={styles.fold}>
+          <div className="container">
+            <h1>About Us</h1>
+            <p>
+              We empower people to get outside, reconnect with nature, and
+              embark on two-wheeled adventures.
+            </p>
+          </div>
+        </section>
+        <section className={styles.aboutsite}>
+          <div className="container">
+            <div className={styles.blockcontainer}>
+              <div className={styles.block}>
+                <h3 className={styles.title}>
+                    Who We Are
+                    </h3>
+                <p>
+                  Ride with GPS was founded in 2007 by Zack and Cullen, two
+                  friends with a shared love of riding bikes, exploring new
+                  roads, and writing cool software. We've grown and changed
+                  quite a bit since the early days, but the important things
+                  remain unchanged: Our passion for bikes, our mission to
+                  inspire you to get out and ride, and our commitment to
+                  building the very best service for our community.
+                </p>
+              </div>
+              <figure className={styles.image}>
+                <img
+                  src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                  alt="bike"
+                />
+              </figure>
+            </div>
+            <div className={styles.blockcontainer}>
+              <figure className={styles.image}>
+                <img
+                  src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                  alt="bike"
+                />
+              </figure>
+              <div className={styles.block}>
+                <h3 className={styles.title}>
+                    Who We Are</h3>
+                <p>
+                  Ride with GPS was founded in 2007 by Zack and Cullen, two
+                  friends with a shared love of riding bikes, exploring new
+                  roads, and writing cool software. We've grown and changed
+                  quite a bit since the early days, but the important things
+                  remain unchanged: Our passion for bikes, our mission to
+                  inspire you to get out and ride, and our commitment to
+                  building the very best service for our community.
+                </p>
+              </div>
+            </div>
+            <div className={styles.blockcontainer}>
+              <div className={styles.block}>
+                <h3 className={styles.title}>
+                    Who We Are</h3>
+                <p>
+                  Ride with GPS was founded in 2007 by Zack and Cullen, two
+                  friends with a shared love of riding bikes, exploring new
+                  roads, and writing cool software. We've grown and changed
+                  quite a bit since the early days, but the important things
+                  remain unchanged: Our passion for bikes, our mission to
+                  inspire you to get out and ride, and our commitment to
+                  building the very best service for our community.
+                </p>
+              </div>
+              <figure className={styles.image}>
+                <img
+                  src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                  alt="bike"
+                />
+              </figure>
+            </div>
+          </div>
+        </section>
+        <section className={styles.contantpress}>
+            <div className="container">
+                <p>For Inquiries, please contact nityahoyos@gmail.com</p>
+            </div>
+        </section>
+      </main>
+    </div>
+  );
 }

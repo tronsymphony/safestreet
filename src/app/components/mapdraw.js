@@ -1,166 +1,237 @@
-'use client';
-import React, { useState, useCallback, useEffect } from "react";
-import { GoogleMap, LoadScript, Polyline, DrawingManager, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
-import Modal from 'react-modal';
-import { customMapStyles } from "./customMapStyles";
+// components/MapboxDrawComponent.js
+import React, { useRef, useEffect, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import MapboxDirections from '@mapbox/mapbox-sdk/services/directions';
+import Modal from './Modal';
 
-const libraries = ['drawing', 'places'];
+mapboxgl.accessToken = 'pk.eyJ1Ijoibml0eWFob3lvcyIsImEiOiJjbGZ0N203ODQwNXBiM3FvbXhvd3UwcDcxIn0.auRwB9upsB10y6hEnczwAA';
 
-export default function GMapDraw() {
-    const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBSYN4U7NwpFWZfXmHCMF7jta6SHdMewVY';
-    const [drawnShapes, setDrawnShapes] = useState([]);
-    const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [modalContent, setModalContent] = useState({});
-    const [mapLoaded, setMapLoaded] = useState(false);
-    const [directionsResponses, setDirectionsResponses] = useState([]);
-    const [waypoints, setWaypoints] = useState([]);
-    const [directionsResponsesUpdate, setDirectionsResponsesUpdated] = useState(false);
+const MapboxDrawComponent = () => {
+    const mapContainerRef = useRef(null);
+    const [map, setMap] = useState(null);
+    const [draw, setDraw] = useState(null);
+    const [routesData, setRoutesData] = useState([]);
+    const [modalContent, setModalContent] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const directionsClient = MapboxDirections({ accessToken: mapboxgl.accessToken });
 
-    const mapOptions = {
-        zoomControl: true,
-        mapTypeControl: true,
-        scaleControl: true,
-        streetViewControl: true,
-        rotateControl: true,
-        fullscreenControl: true,
-        styles: customMapStyles,
+    const fetchData = async () => {
+        try {
+            const response = await fetch('http://localhost:3001/api/getroutes', {
+                method: 'GET',
+            });
+            const data = await response.json();
+            setRoutesData(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     };
 
-    const onLoad = useCallback((map) => {
-        setMapLoaded(true);
+    const parseCoordinates = (str) => {
+        const matches = str.match(/\[.*\]/);
+        if (matches && matches.length > 0) {
+            const coordinatesArray = JSON.parse(matches[0]);
+            return coordinatesArray;
+        }
+        return [];
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
 
-    const handlePolylineClick = (lat, lng) => {
-        setModalContent({ lat, lng });
-        setModalIsOpen(true);
-    };
+    useEffect(() => {
+        const initializeMap = ({ setMap, mapContainer }) => {
+            const map = new mapboxgl.Map({
+                container: mapContainer.current,
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [-118.46648985815806, 33.979215019959895],
+                zoom: 13,
+            });
 
-    const closeModal = () => {
-        setModalIsOpen(false);
-    };
+            const draw = new MapboxDraw({
+                displayControlsDefault: false,
+                controls: {
+                    polygon: true,
+                    line_string: true,
+                    point: true,
+                    trash: true,
+                },
+                defaultMode: 'draw_line_string',
+            });
 
-    const updateWaypoints = (path) => {
-        const updatedPath = path.getArray().map(coord => ({ lat: coord.lat(), lng: coord.lng() }));
-        setWaypoints(updatedPath);
-        setDirectionsResponsesUpdated(false); // Reset to allow new directions fetch
-    };
+            map.addControl(draw);
+            setDraw(draw);
 
-    const onOverlayComplete = (e) => {
-        const newShape = e.overlay;
-        newShape.type = e.type;
-        setDrawnShapes((prevShapes) => [...prevShapes, newShape]);
+            map.on('draw.create', updateRoute);
+            map.on('draw.update', updateRoute);
+            map.on('draw.delete', clearRoute);
 
-
-        if (newShape.type === 'polyline') {
-            const path = newShape.getPath().getArray().map(coord => ({ lat: coord.lat(), lng: coord.lng() }));
-            setWaypoints(path);
-            console.log('New polyline created with path:', path);
-        }
-    };
-
-    const clearMap = () => {
-        drawnShapes.forEach(shape => shape.setMap(null)); // Remove all shapes from the map
-        setDrawnShapes([]);
-        setWaypoints([]);
-        setDirectionsResponses([]);
-        setDirectionsResponsesUpdated(false)
-    };
-
-    const directionsCallback = useCallback((result, status) => {
-        if (status === 'OK' && result) {
-            if (directionsResponsesUpdate == false) {
-                console.log(directionsResponsesUpdate)
-                setDirectionsResponses([result]);
-                setDirectionsResponsesUpdated(true)
-
+            function updateRoute(e) {
+                const data = draw.getAll();
+                if (data.features.length > 0) {
+                    const coordinates = data.features[0].geometry.coordinates;
+                    if (coordinates.length >= 2) {
+                        console.log('Updated route coordinates:', coordinates);
+                        getRoute(coordinates);
+                    }
+                }
             }
-        } else {
-            console.error('error fetching directions', result, status);
-        }
-    }, [directionsResponsesUpdate]);
 
+            function clearRoute() {
+                if (map.getSource('route')) {
+                    map.getSource('route').setData({
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: [],
+                        },
+                    });
+                }
+            }
 
+            function getRoute(coordinates) {
+                const waypoints = coordinates.map(coord => ({
+                    coordinates: coord,
+                }));
 
+                directionsClient.getDirections({
+                    profile: 'driving',
+                    geometries: 'geojson',
+                    waypoints: waypoints,
+                })
+                    .send()
+                    .then(response => {
+                        const route = response.body.routes[0].geometry;
+                        map.getSource('route').setData(route);
+                    })
+                    .catch(err => {
+                        console.error('Error fetching directions:', err);
+                    });
+            }
+
+            function loadMultipleRoutes() {
+                console.log(routesData);
+                routesData.routes?.forEach((route, index) => {
+                    const coordinates = parseCoordinates(route.routes);
+                    const waypoints = coordinates.map(coord => ({
+                        coordinates: coord,
+                    }));
+
+                    directionsClient.getDirections({
+                        profile: 'driving',
+                        geometries: 'geojson',
+                        waypoints: waypoints,
+                    })
+                        .send()
+                        .then(response => {
+                            const route = response.body.routes[0].geometry;
+                            const routeId = `route-${index}`;
+
+                            if (map.getLayer(routeId)) {
+                                map.removeLayer(routeId);
+                            }
+                            if (map.getSource(routeId)) {
+                                map.removeSource(routeId);
+                            }
+
+                            map.addSource(routeId, {
+                                type: 'geojson',
+                                data: route,
+                            });
+                            map.addLayer({
+                                id: routeId,
+                                type: 'line',
+                                source: routeId,
+                                layout: {
+                                    'line-join': 'round',
+                                    'line-cap': 'round',
+                                },
+                                paint: {
+                                    'line-color': `#444`,
+                                    'line-width': 5,
+                                    'line-opacity': 0.75,
+                                },
+                            });
+
+                            map.on('click', routeId, (e) => {
+                                const clickedCoordinates = e.features[0].geometry.coordinates;
+                                const content = (
+                                    <div>
+                                        <h3>Route {index + 1}</h3>
+                                        <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
+                                    </div>
+                                );
+                                setModalContent(content);
+                                setIsModalOpen(true);
+                            });
+
+                            map.on('mouseenter', routeId, () => {
+                                map.getCanvas().style.cursor = 'pointer';
+                                map.setPaintProperty(routeId, 'line-color', '#ff0000');
+                            });
+
+                            map.on('mouseleave', routeId, () => {
+                                map.getCanvas().style.cursor = '';
+                                map.setPaintProperty(routeId, 'line-color', '#444');
+                            });
+                        })
+                        .catch(err => {
+                            console.error('Error fetching directions:', err);
+                        });
+                });
+            }
+
+            map.on('load', () => {
+                map.addSource('route', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: [],
+                        },
+                    },
+                });
+
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: 'route',
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round',
+                    },
+                    paint: {
+                        'line-color': '#3887be',
+                        'line-width': 5,
+                        'line-opacity': 0.75,
+                    },
+                });
+
+                setMap(map);
+                loadMultipleRoutes();
+            });
+        };
+
+        if (!map) initializeMap({ setMap, mapContainer: mapContainerRef });
+
+        return () => {
+            if (map) {
+                map.remove();
+            }
+        };
+    }, [map, routesData]);
 
     return (
         <>
-            <LoadScript googleMapsApiKey={API_KEY} libraries={libraries}>
-                <GoogleMap
-                    center={{ lat: 33.979215019959895, lng: -118.46648985815806 }}
-                    zoom={13}
-                    mapContainerStyle={{ height: '80vh', width: '100%' }}
-                    options={mapOptions}
-                    onLoad={onLoad}
-                >
-                    {directionsResponses.map((directions, index) => (
-                        <DirectionsRenderer
-                            key={`directions-${index}`}
-                            directions={directions}
-                            options={{
-                                polylineOptions: {
-                                    strokeColor: '#FF5733',
-                                    strokeOpacity: 0.7,
-                                    strokeWeight: 1,
-                                    editable: true,
-                                },
-                            }}
-                        />
-                    ))}
-
-                    {mapLoaded && (
-                        <DrawingManager
-                            onOverlayComplete={onOverlayComplete}
-                            options={{
-                                drawingControl: true,
-                                drawingControlOptions: {
-                                    position: 1, // google.maps.ControlPosition.TOP_CENTER
-                                    drawingModes: ['polyline'], // Only allow drawing polylines
-                                },
-                                polylineOptions: {
-                                    strokeColor: '#FF0000',
-                                    strokeOpacity: 1.0,
-                                    strokeWeight: 3,
-                                    clickable: true,
-                                    zIndex: 1,
-                                    editable: true,
-                                    draggable: true
-                                },
-                            }}
-                        />
-                    )}
-
-                    {waypoints.length >= 2 && (
-                        <DirectionsService
-                            options={{
-                                origin: waypoints[0],
-                                destination: waypoints[waypoints.length - 1],
-                                waypoints: waypoints.slice(1, waypoints.length - 1).map(location => ({ location })),
-                                travelMode: 'TWO_WHEELER',
-                                optimizeWaypoints: true,
-
-
-                            }}
-                            callback={directionsCallback}
-                        />
-                    )}
-                </GoogleMap>
-            </LoadScript>
-
-            <Modal
-                ariaHideApp={false}
-                isOpen={modalIsOpen}
-                onRequestClose={closeModal}
-                contentLabel="Segment Info"
-            >
-                <h2 style={{ color: 'black' }}>Segment Info</h2>
-                <pre style={{ color: 'black' }}>{JSON.stringify(modalContent, null, 2)}</pre>
-                <button onClick={closeModal}>Close</button>
-            </Modal>
-
-            <button onClick={clearMap} style={{ position: 'absolute', top: '10px', left: '10px', zIndex: '10' }}>
-                Clear Drawing
-            </button>
-
+            <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
         </>
     );
-}
+};
+
+export default MapboxDrawComponent;

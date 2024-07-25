@@ -190,6 +190,7 @@ export default function GMap() {
                             }}
                         />
                     ))}
+                    
                     {directionsResponses.map((route, index) => (
                         <React.Fragment key={index}>
                             <Polyline
