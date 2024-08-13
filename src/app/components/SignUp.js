@@ -1,4 +1,5 @@
 // components/SignUp.js
+
 import { useState } from 'react';
 
 const SignUp = () => {
@@ -26,6 +27,7 @@ const SignUp = () => {
 
   return (
     <div>
+      <div className="container">
       <h2>Sign Up</h2>
       <input
         type="email"
@@ -41,6 +43,7 @@ const SignUp = () => {
       />
       <button onClick={handleSignUp}>Sign Up</button>
       {message && <p>{message}</p>}
+      </div>
     </div>
   );
 };

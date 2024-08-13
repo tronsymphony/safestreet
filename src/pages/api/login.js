@@ -1,6 +1,9 @@
 // pages/api/login.js
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import pool from '../../lib/db';
+
+const secretKey = process.env.JWT_SECRET; // Use a secure key in production
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -20,8 +23,12 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
-      // Here you would typically generate a token for the user session (e.g., JWT)
-      res.status(200).json({ message: 'Login successful', user });
+      // Generate a JWT token
+      const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: '1h' });
+
+      res.setHeader('Set-Cookie', `token=${token}; Path=/; Max-Age=3600`);
+
+      res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Login failed' });
