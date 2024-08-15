@@ -12,6 +12,9 @@
   },
   "dependencies": {
     "@editorjs/editorjs": "^2.30.5",
+    "@editorjs/header": "^2.8.7",
+    "@editorjs/image": "^2.9.3",
+    "@editorjs/list": "^1.10.0",
     "@editorjs/paragraph": "^2.11.6",
     "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@mapbox/mapbox-sdk": "^0.16.0",
