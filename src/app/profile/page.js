@@ -9,18 +9,18 @@ export default function Home() {
     const INITIAL_DATA = {
         time: new Date().getTime(),
         blocks: [
-          {
-            type: "header",
-            data: {
-              text: "This is my awesome editor!",
-              level: 1,
+            {
+                type: "header",
+                data: {
+                    text: "This is my awesome editor!",
+                    level: 1,
+                },
             },
-          },
         ],
-      };
+    };
 
 
-      const handleSave = async (postData) => {
+    const handleSave = async (postData) => {
         try {
             // Extract title and content from postData
             const titleBlock = postData.blocks.find(block => block.type === 'header');
@@ -62,13 +62,12 @@ export default function Home() {
             profiledd
             <h2>Create a New Post</h2>
             <Editor data={data} onChange={setData} editorblock="editorjs-container" />
-      <button
-        className="savebtn"
-        onClick={() => handleSave(data)}
-      >
-        Save
-      </button>
-
+            <button
+                className="savebtn"
+                onClick={() => handleSave(data)}
+            >
+                Save Post
+            </button>
         </main>
     );
 }
