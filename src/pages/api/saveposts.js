@@ -1,10 +1,10 @@
 // pages/api/posts.js
 import { Client } from 'pg';
 import pool from '../../lib/db';
-import cors, { runMiddleware } from '../../lib/corsMiddleware';
+// import cors, { runMiddleware } from '../../lib/corsMiddleware';
 
 export default async function handler(req, res) {
-    await runMiddleware(req, res, cors);
+  // await runMiddleware(req, res, cors);
 
   if (req.method === 'POST') {
     const { title, content } = req.body;

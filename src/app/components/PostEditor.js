@@ -1,52 +1,34 @@
-import React, { useRef, useEffect } from 'react';
-import EditorJS from '@editorjs/editorjs';
-import Header from '@editorjs/header';
-import List from '@editorjs/list';
-import Paragraph from '@editorjs/paragraph';
-import ImageTool from '@editorjs/image';
+import React, { memo, useEffect, useRef } from "react";
+import EditorJS from "@editorjs/editorjs";
+import { EDITOR_JS_TOOLS } from "./tools";
 
-const PostEditor = ({ onSave }) => {
-  const editorInstance = useRef(null);
-
+const Editor = ({ data, onChange, editorblock }) => {
+  const ref = useRef();
+  //Initialize editorjs
   useEffect(() => {
-    // Initialize Editor.js
-    editorInstance.current = new EditorJS({
-      holder: 'editorjs',
-      tools: {
-        header: Header,
-        list: List,
-        paragraph: Paragraph,
-        image: ImageTool,
-      },
-      autofocus: true,
-    });
+    //Initialize editorjs if we don't have a reference
+    if (!ref.current) {
+      const editor = new EditorJS({
+        holder: editorblock,
 
-    // Cleanup function to destroy the editor instance
+        tools: EDITOR_JS_TOOLS,
+        data: data,
+        async onChange(api, event) {
+          const data = await api.saver.save();
+          onChange(data);
+        },
+      });
+      ref.current = editor;
+    }
+
+    //Add a return function to handle cleanup
     return () => {
-      if (editorInstance.current) {
-        editorInstance.current.isReady
-          .then(() => {
-            editorInstance.current.destroy();
-            editorInstance.current = null;
-          })
-          .catch((error) => console.error('ERROR during editor cleanup:', error));
+      if (ref.current && ref.current.destroy) {
+        ref.current.destroy();
       }
     };
   }, []);
-
-  const handleSave = async () => {
-    if (editorInstance.current) {
-      const savedData = await editorInstance.current.save();
-      onSave(savedData);
-    }
-  };
-
-  return (
-    <div>
-      <div id="editorjs"></div>
-      <button onClick={handleSave}>Save Post</button>
-    </div>
-  );
+  return <div id={editorblock} />;
 };
 
-export default PostEditor;
+export default memo(Editor);
