@@ -19,8 +19,11 @@
     "@editorjs/link": "^2.6.2",
     "@editorjs/list": "^1.10.0",
     "@editorjs/paragraph": "^2.11.6",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
     "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@mapbox/mapbox-sdk": "^0.16.0",
+    "@mui/material": "^6.0.0",
     "@nestjs/platform-express": "^10.3.8",
     "@react-google-maps/api": "^2.19.3",
     "@vis.gl/react-google-maps": "^1.0.1",
@@ -43,5 +46,6 @@
   "devDependencies": {
     "eslint": "^8",
     "eslint-config-next": "14.2.3"
-  }
+  },
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }

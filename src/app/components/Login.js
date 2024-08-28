@@ -1,10 +1,16 @@
-// components/Login.js
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { TextField, Button, Typography, Container } from '@mui/material';
+import cookie from 'js-cookie';
+import { useRouter } from 'next/navigation'
+import jwt from 'jsonwebtoken';
+import { useSession } from '../../lib/SessionContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const router = useRouter();
+  const { setSession } = useSession();
 
   const handleLogin = async () => {
     const response = await fetch('/api/login', {
@@ -19,29 +25,55 @@ const Login = () => {
 
     if (response.ok) {
       setMessage('Login successful');
+      const token = cookie.get('token');
+      if (token) {
+        const decoded = jwt.decode(token);
+        setSession(decoded);  // Update the session context
+      }
+      router.push('/profile'); 
     } else {
       setMessage(data.error);
     }
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <input
+    <Container maxWidth="lg" sx={{ my: '4rem' }}>
+      <Typography variant="h4" gutterBottom>
+        Login
+      </Typography>
+      <TextField
+        fullWidth
+        label="Email"
+        variant="outlined"
         type="email"
-        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        margin="normal"
       />
-      <input
+      <TextField
+        fullWidth
+        label="Password"
+        variant="outlined"
         type="password"
-        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        margin="normal"
       />
-      <button onClick={handleLogin}>Login</button>
-      {message && <p>{message}</p>}
-    </div>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleLogin}
+        fullWidth
+        style={{ marginTop: '16px' }}
+      >
+        Login
+      </Button>
+      {message && (
+        <Typography variant="body1" color="error" style={{ marginTop: '16px' }}>
+          {message}
+        </Typography>
+      )}
+    </Container>
   );
 };
 
