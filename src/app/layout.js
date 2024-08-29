@@ -52,9 +52,8 @@ function RootContent({ children }) {
           <div className="container">
             <div className={styles.logo}>
               <Link href="/">
-                <span>
-                  {/* SVG content */}
-                </span>
+                {/* <span> */}
+                {/* </span> */}
                 Safe Streets Map
               </Link>
             </div>
