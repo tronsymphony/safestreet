@@ -1,73 +1,35 @@
 'use client'
-import styles from "./page.module.scss";
-import Editor from '../components/PostEditor';
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Grid, Card, CardContent, Button, CardActions } from '@mui/material';
+import Link from 'next/link';
+import PostListPage from '../components/PostList';
+// import RouteList from '../../components/RouteList';
 
-
-export default function Home() {
-
-    const INITIAL_DATA = {
-        time: new Date().getTime(),
-        blocks: [
-            {
-                type: "header",
-                data: {
-                    text: "This is my awesome editor!",
-                    level: 1,
-                },
-            },
-        ],
-    };
-
-
-    const handleSave = async (postData) => {
-        try {
-            // Extract title and content from postData
-            const titleBlock = postData.blocks.find(block => block.type === 'header');
-            const contentBlocks = postData.blocks.filter(block => block.type !== 'header');
-
-            const postContent = {
-                title: titleBlock ? titleBlock.data.text : 'Untitled',
-                content: JSON.stringify(contentBlocks),
-                created_at: new Date().toISOString(), // Adding created_at timestamp
-                updated_at: new Date().toISOString(), // Adding updated_at timestamp
-            };
-
-            const response = await fetch('/api/saveposts', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postContent),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log('Post saved successfully!', data);
-
-            // Display a success message or update the UI accordingly
-        } catch (error) {
-            console.error('Error saving post:', error);
-            // Handle the error, maybe display a message to the user
-        }
-    };
-
-    const [data, setData] = useState(INITIAL_DATA);
-
-    return (
-        <main className={styles.main}>
-            profiledd
-            <h2>Create a New Post</h2>
-            <Editor data={data} onChange={setData} editorblock="editorjs-container" />
-            <button
-                className="savebtn"
-                onClick={() => handleSave(data)}
+export default function ManagePage() {
+  return (
+    <Container maxWidth="md" style={{ padding: '4rem 0' }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Manage Your Content
+      </Typography>
+      <Grid container spacing={4}>
+        <Grid item xs={12}>
+          <PostListPage  />
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Your Routes
+          </Typography>
+          <Button
+              variant="contained"
+              color="primary"
+              component={Link}
+              href="/map/edit" 
             >
-                Save Post
-            </button>
-        </main>
-    );
+              Add Routes
+            </Button>
+          {/* <RouteList routes={routes} /> */}
+        </Grid>
+      </Grid>
+    </Container>
+  );
 }

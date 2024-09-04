@@ -89,7 +89,7 @@ a {
 }
 
 .main-header {
-  padding: 10px 0;
+  padding: 2rem 0;
 
   .container {
     max-width: 1220px;
@@ -140,10 +140,16 @@ a {
 
 .main-map {
   padding: 2rem 2rem 6rem;
+  .mapboxgl-map{
+    border-radius: 32px;
+  }
 }
 
 .pagelocals {
   padding: 2rem 2rem 0;
+  .title{
+    text-align: center;
+  }
 }
 
 .main-footer {

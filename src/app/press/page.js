@@ -16,8 +16,8 @@ export default async function BlogPage() {
   const posts = await fetchPosts();
 
   return (
-    <Container maxWidth="md" style={{ marginTop: '2rem' }}>
-      <Typography variant="h2" component="h1" gutterBottom>
+    <Container maxWidth="md" style={{ padding: '4rem 0', marginTop: '0 auto' }}>
+      <Typography variant="h1" component="h1" gutterBottom>
         Blog Posts
       </Typography>
       <Grid container spacing={4}>
@@ -50,12 +50,14 @@ export default async function BlogPage() {
           }
 
           return (
-            <Grid item xs={12} key={post.id}>
+            <Grid item xs={12} key={post.id} >
               <Card>
                 <CardContent>
-                  <Typography variant="h5" component="h2" gutterBottom>
+                <Typography variant="h2" component="div" gutterBottom>
                     <Link href={`/posts/${post.id}`} passHref>
-                      <Button color="primary">{post.title}</Button>
+                      <Button color="primary" style={{ textTransform: 'none', fontSize: 'inherit' }}>
+                        {post.title}
+                      </Button>
                     </Link>
                   </Typography>
                   <Typography variant="body2" color="textSecondary" gutterBottom>

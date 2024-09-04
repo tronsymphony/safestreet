@@ -27,19 +27,20 @@ export default function HomePageHero() {
                         </h2>
                 </div>
                 <div className={styles.pagerighttricolumns}>
-                    <div className={styles.pagerighttricolumn}>
-                        <h3 className={styles.title}>Build the perfect route</h3>
-                        <p>Find a great route, and tweak it with our planner. It&apos;s easy to find the best routes wherever you are, and our tools let you adjust difficulty and start location.</p>
-                    </div>
-                    <div className={styles.pagerighttricolumn}>
-                        <h3 className={styles.title}>Build the perfect route</h3>
-                        <p>Find a great route, and tweak it with our planner. It&apos;s easy to find the best routes wherever you are, and our tools let you adjust difficulty and start location.</p>
-                    </div>
-                    <div className={styles.pagerighttricolumn}>
-                        <h3 className={styles.title}>Build the perfect route</h3>
-                        <p>Find a great route, and tweak it with our planner. It&apos;s easy to find the best routes wherever you are, and our tools let you adjust difficulty and start location.</p>
-                    </div>
-                </div>
+    <div className={styles.pagerighttricolumn}>
+        <h3 className={styles.title}>Find the Safest Route</h3>
+        <p>Explore the safest routes through the city with our advanced mapping tools. Whether you're biking, walking, or driving, our app helps you avoid high-traffic areas and dangerous intersections.</p>
+    </div>
+    <div className={styles.pagerighttricolumn}>
+        <h3 className={styles.title}>Plan Your Journey</h3>
+        <p>Customize your route to prioritize safety. Use our planner to avoid busy roads, find well-lit streets, and choose paths that are best suited for your journey, no matter the time of day.</p>
+    </div>
+    <div className={styles.pagerighttricolumn}>
+        <h3 className={styles.title}>Navigate with Confidence</h3>
+        <p>Set off on your route knowing you've chosen the safest path. Our app provides real-time updates on your route, helping you adjust on the go to stay on the safest track.</p>
+    </div>
+</div>
+
                 <div className={styles.pagerightbtn}>
                 <button className="goto">Find the best routes</button>
                 </div>

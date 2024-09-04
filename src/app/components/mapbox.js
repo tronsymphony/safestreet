@@ -14,8 +14,8 @@ const MapboxDrawComponent = () => {
     const [routesData, setRoutesData] = useState([]);
     const [modalContent, setModalContent] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userLocation, setUserLocation] = useState({ lat: 33.979215019959895, lng: -118.46648985815806 }); // Default location
 
-    // Memoize directionsClient to avoid re-creating it on every render
     const directionsClient = useMemo(() => MapboxDirections({ accessToken: mapboxgl.accessToken }), []);
 
     const fetchData = async () => {
@@ -39,6 +39,21 @@ const MapboxDrawComponent = () => {
     };
 
     useEffect(() => {
+        // Request user's location
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setUserLocation({ lat: latitude, lng: longitude });
+            },
+            (error) => {
+                console.error('Error fetching user location:', error);
+                // Use default location if the user denies access or there's an error
+            },
+            { enableHighAccuracy: true }
+        );
+    }, []);
+
+    useEffect(() => {
         fetchData();
     }, []);
 
@@ -49,12 +64,18 @@ const MapboxDrawComponent = () => {
     }, [map, routesData]);
 
     useEffect(() => {
-        if (!map) {
+        if (map && userLocation) {
+            map.setCenter([userLocation.lng, userLocation.lat]);
+        }
+    }, [userLocation, map]);
+
+    useEffect(() => {
+        if (userLocation && !map) {
             const initializeMap = () => {
                 const map = new mapboxgl.Map({
                     container: mapContainerRef.current,
                     style: 'mapbox://styles/mapbox/streets-v11',
-                    center: [-118.46648985815806, 33.979215019959895],
+                    center: [userLocation.lng, userLocation.lat],
                     zoom: 13,
                 });
 
@@ -109,7 +130,7 @@ const MapboxDrawComponent = () => {
 
             initializeMap();
         }
-    }, [map, directionsClient]);
+    }, [map, directionsClient, userLocation]);
 
     const updateRoute = (e) => {
         const data = draw.getAll();

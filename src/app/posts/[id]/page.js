@@ -1,8 +1,9 @@
 import React from 'react';
+import { Container, Typography, Box, Card } from '@mui/material';
 
 async function fetchPost(id) {
   const res = await fetch(`http://localhost:3000/api/getpostbyid?id=${id}`);
-  
+
   if (!res.ok) {
     throw new Error('Failed to fetch post');
   }
@@ -21,10 +22,12 @@ export default async function PostPage({ params }) {
   } catch (error) {
     console.error('Error fetching post:', error);
     return (
-      <div>
-        <h1>Error</h1>
-        <p>Could not fetch the post. Please try again later.</p>
-      </div>
+      <Container maxWidth="md">
+        <Card elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
+          <Typography variant="h4" component="h1" gutterBottom>Error</Typography>
+          <Typography variant="body1">Could not fetch the post. Please try again later.</Typography>
+        </Card>
+      </Container>
     );
   }
 
@@ -36,15 +39,19 @@ export default async function PostPage({ params }) {
       // Parse JSON content
       const contentJson = JSON.parse(post.content);
       content = (
-        <div>
+        <Box>
           {contentJson.map((block) => {
             if (block.type === 'paragraph') {
-              return <p key={block.id}>{block.data.text}</p>;
+              return (
+                <Typography variant="body1" key={block.id} paragraph>
+                  {block.data.text}
+                </Typography>
+              );
             }
             // Handle other block types if necessary
             return null;
           })}
-        </div>
+        </Box>
       );
     } catch (error) {
       console.error('Failed to parse JSON content:', error);
@@ -52,14 +59,19 @@ export default async function PostPage({ params }) {
     }
   } else {
     // Handle HTML content
-    content = <div dangerouslySetInnerHTML={{ __html: post.content }} />;
+    content = <Box dangerouslySetInnerHTML={{ __html: post.content }} />;
   }
 
   return (
-    <div>
-      <h1>{post.title}</h1>
-      {content}
-      <small>Posted on: {new Date(post.created_at).toLocaleDateString()}</small>
-    </div>
+    <Container maxWidth="md" style={{ padding: '2rem 0', }}>
+      <Card elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
+        <Typography variant="h2" component="h1" gutterBottom>{post.title}</Typography>
+        <Typography variant="caption" display="block" gutterBottom>
+          Posted on: {new Date(post.created_at).toLocaleDateString()}
+        </Typography>
+        {content}
+
+      </Card>
+    </Container>
   );
 }
