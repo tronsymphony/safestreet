@@ -1,24 +1,33 @@
-'use client'
-// components/MapboxDrawComponent.js
-import React, { useRef, useEffect, useState } from 'react';
+'use client';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import MapboxDirections from '@mapbox/mapbox-sdk/services/directions';
+import Modal from './Modal';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoibml0eWFob3lvcyIsImEiOiJjbGZ0N203ODQwNXBiM3FvbXhvd3UwcDcxIn0.auRwB9upsB10y6hEnczwAA';
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
 const MapboxDrawComponent = () => {
     const mapContainerRef = useRef(null);
-    const mapInstance = useRef(null); // To store map instance without triggering re-renders
-    const [draw, setDraw] = useState(null);
+    const drawRef = useRef(null); // Use useRef to store draw control
     const [routesData, setRoutesData] = useState([]);
-    const directionsClient = MapboxDirections({ accessToken: mapboxgl.accessToken });
+    const [modalContent, setModalContent] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userLocation, setUserLocation] = useState({
+        lat: 33.979215019959895,
+        lng: -118.46648985815806
+    }); // Default location
+    const mapInstance = useRef(null); // To store map instance without triggering re-renders
+    const directionsClient = useMemo(
+        () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
+        []
+    );
 
     const fetchData = async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/getroutes', {
-                method: 'GET',
-            });
+            const response = await fetch('http://localhost:3000/api/getroutes');
             const data = await response.json();
             setRoutesData(data);
         } catch (error) {
@@ -27,33 +36,238 @@ const MapboxDrawComponent = () => {
     };
 
     useEffect(() => {
-        if (mapInstance.current) return; // If map instance exists, do nothing
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                setUserLocation({ lat: latitude, lng: longitude });
+            },
+            (error) => {
+                console.error('Error fetching user location:', error);
+            },
+            { enableHighAccuracy: true }
+        );
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (mapInstance.current && routesData.routes && routesData.routes.length > 0) {
+            loadMultipleRoutes();
+        }
+    }, [routesData]);
+
+    useEffect(() => {
+        if (mapInstance.current && userLocation) {
+            mapInstance.current.setCenter([userLocation.lng, userLocation.lat]);
+        }
+    }, [userLocation]);
+
+    useEffect(() => {
+        if (mapInstance.current) return;
 
         if (mapContainerRef.current) {
-            mapInstance.current = new mapboxgl.Map({
-                container: mapContainerRef.current,
-                style: 'mapbox://styles/mapbox/streets-v11',
-                center: [-118.46648985815806, 33.979215019959895],
-                zoom: 13,
-            });
-
-            const drawControl = new MapboxDraw({
-                displayControlsDefault: false,
-                controls: {
-                    polygon: true,
-                    line_string: true,
-                    point: true,
-                    trash: true,
-                },
-                defaultMode: 'draw_line_string',
-            });
-
-            mapInstance.current.addControl(drawControl);
-            setDraw(drawControl);
+            initializeMap();
         }
-    }, []); // Empty array ensures this useEffect runs only once
 
-    return <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />;
+    }, [userLocation]);
+
+    const initializeMap = () => {
+
+        mapInstance.current = new mapboxgl.Map({
+            container: mapContainerRef.current,
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [userLocation.lng, userLocation.lat],
+            zoom: 13
+        });
+
+        // Initialize MapboxDraw and store it in the ref
+        drawRef.current = new MapboxDraw({
+            displayControlsDefault: false,
+            controls: {
+                line_string: true,
+                trash: true,
+            },
+            defaultMode: 'draw_line_string', // Mode for drawing line strings
+        });
+
+        // Set the draw control in the map instance
+        mapInstance.current.addControl(drawRef.current);
+
+        // Update route by snapping it to streets using the Mapbox Directions API
+        const updateRoute = (e) => {
+            const data = drawRef.current.getAll();
+            if (data.features.length > 0) {
+                const coordinates = data.features[0].geometry.coordinates;
+
+                // Convert the coordinates to waypoints for the Directions API
+                if (coordinates.length >= 2) {
+                    getSnappedRoute(coordinates);
+                }
+            }
+        };
+
+        // Listen to draw.create and draw.update events to allow route drawing and editing
+        mapInstance.current.on('draw.create', updateRoute);
+        mapInstance.current.on('draw.update', updateRoute);
+        mapInstance.current.on('draw.delete', clearRoute);
+
+        // When the map is loaded, set up the route source and layer
+        mapInstance.current.on('load', () => {
+            mapInstance.current.addSource('route', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: []
+                    }
+                }
+            });
+
+            mapInstance.current.addLayer({
+                id: 'route',
+                type: 'line',
+                source: 'route',
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#3887be',
+                    'line-width': 5,
+                    'line-opacity': 0.75
+                }
+            });
+        });
+    };
+
+    const clearRoute = () => {
+        if (mapInstance.current.getSource('route')) {
+            mapInstance.current.getSource('route').setData({
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                    type: 'LineString',
+                    coordinates: []
+                }
+            });
+        }
+    };
+
+    // Function to get the snapped route from the Directions API
+    const getSnappedRoute = (coordinates) => {
+        const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
+
+        // Get route snapped to streets
+        directionsClient
+            .getDirections({
+                profile: 'driving', // Use driving profile for biking routes
+                geometries: 'geojson',
+                waypoints: waypoints
+            })
+            .send()
+            .then((response) => {
+                const route = response.body.routes[0].geometry;
+
+                // Update the route source with the snapped route
+                if (mapInstance.current.getSource('route')) {
+                    mapInstance.current.getSource('route').setData({
+                        type: 'Feature',
+                        properties: {},
+                        geometry: route,
+                    });
+                }
+            })
+            .catch((err) => console.error('Error fetching directions:', err));
+    };
+
+    const loadMultipleRoutes = () => {
+        routesData.routes?.forEach((route, index) => {
+            const coordinates = parseCoordinates(route.routes);
+            const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
+
+            directionsClient
+                .getDirections({
+                    profile: 'driving', // Use driving profile for RideWithGPS-style routes
+                    geometries: 'geojson',
+                    waypoints: waypoints
+                })
+                .send()
+                .then((response) => {
+                    const route = response.body.routes[0].geometry;
+                    const routeId = `route-${index}`;
+
+                    mapInstance.current.addSource(routeId, {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            properties: {},
+                            geometry: route,
+                        }
+                    });
+
+                    mapInstance.current.addLayer({
+                        id: routeId,
+                        type: 'line',
+                        source: routeId,
+                        layout: {
+                            'line-join': 'round',
+                            'line-cap': 'round'
+                        },
+                        paint: {
+                            'line-color': '#444',
+                            'line-width': 5,
+                            'line-opacity': 0.75
+                        }
+                    });
+
+                    mapInstance.current.on('click', routeId, (e) => {
+                        const clickedCoordinates = e.features[0].geometry.coordinates;
+                        const content = (
+                            <div>
+                                <h3>Route {index + 1}</h3>
+                                <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
+                            </div>
+                        );
+                        setModalContent(content);
+                        setIsModalOpen(true);
+                    });
+
+                    mapInstance.current.on('mouseenter', routeId, () => {
+                        mapInstance.current.getCanvas().style.cursor = 'pointer';
+                        mapInstance.current.setPaintProperty(routeId, 'line-color', '#ff0000');
+                    });
+
+                    mapInstance.current.on('mouseleave', routeId, () => {
+                        mapInstance.current.getCanvas().style.cursor = '';
+                        mapInstance.current.setPaintProperty(routeId, 'line-color', '#444');
+                    });
+                })
+                .catch((err) => console.error('Error fetching directions:', err));
+        });
+    };
+
+    const parseCoordinates = (str) => {
+        const matches = str.match(/\[.*\]/);
+        if (matches && matches.length > 0) {
+            return JSON.parse(matches[0]);
+        }
+        return [];
+    };
+
+    return (
+        <>
+            <section className="main-map">
+                <div className="container">
+                    <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
+                </div>
+            </section>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
+        </>
+    );
 };
 
 export default MapboxDrawComponent;

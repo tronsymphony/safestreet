@@ -69,6 +69,7 @@ const MapboxDrawComponent = () => {
             map.on('draw.delete', clearRoute);
 
             function updateRoute(e) {
+                if (!draw) return; 
                 const data = draw.getAll();
                 if (data.features.length > 0) {
                     const coordinates = data.features[0].geometry.coordinates;
