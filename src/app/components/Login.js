@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { TextField, Button, Typography, Container } from '@mui/material';
-import cookie from 'js-cookie';
-import { useRouter } from 'next/navigation'
-import jwt from 'jsonwebtoken';
+import { useRouter } from 'next/navigation';
 import { useSession } from '../../lib/SessionContext';
 
 const Login = () => {
@@ -25,14 +23,17 @@ const Login = () => {
 
     if (response.ok) {
       setMessage('Login successful');
-      const token = cookie.get('token');
-      if (token) {
-        const decoded = jwt.decode(token);
-        setSession(decoded);  // Update the session context
-      }
-      router.push('/profile'); 
+      
+      // Assuming the server sends the JWT token in the response (or other user data)
+      const { token, user } = data; 
+      
+      // Set the session using the user object returned by the API
+      setSession(user);
+
+      // Navigate to the profile page
+      router.push('/profile');
     } else {
-      setMessage(data.error);
+      setMessage(data.message || 'Login failed'); // Show error message
     }
   };
 

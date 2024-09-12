@@ -26,7 +26,6 @@ const MapboxDrawComponent = () => {
             const data = await response.json();
             setRoutesData(data);
 
-
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -46,7 +45,7 @@ const MapboxDrawComponent = () => {
         if (firstNumber && firstNumber.length > 0) {
             return JSON.parse(firstNumber);
         }
-        
+
         return [];
     };
 
@@ -102,9 +101,9 @@ const MapboxDrawComponent = () => {
                     defaultMode: 'draw_line_string',
                 });
 
-                map.on('draw.create', updateRoute);
-                map.on('draw.update', updateRoute);
-                map.on('draw.delete', clearRoute);
+                // map.on('draw.create', updateRoute);
+                // map.on('draw.update', updateRoute);
+                // map.on('draw.delete', clearRoute);
 
                 map.on('load', () => {
                     map.addSource('route', {
@@ -144,57 +143,57 @@ const MapboxDrawComponent = () => {
         }
     }, [map, directionsClient, userLocation]);
 
-    const updateRoute = (e) => {
-        const data = draw.getAll();
-        if (data.features.length > 0) {
-            const coordinates = data.features[0].geometry.coordinates;
-            if (coordinates.length >= 2) {
-                console.log('Updated route coordinates:', coordinates);
-                getRoute(coordinates);
-            }
-        }
-    };
+    // const updateRoute = (e) => {
+    //     const data = draw.getAll();
+    //     if (data.features.length > 0) {
+    //         const coordinates = data.features[0].geometry.coordinates;
+    //         if (coordinates.length >= 2) {
+    //             console.log('Updated route coordinates:', coordinates);
+    //             getRoute(coordinates);
+    //         }
+    //     }
+    // };
 
-    const clearRoute = () => {
-        if (map.getSource('route')) {
-            map.getSource('route').setData({
-                type: 'Feature',
-                properties: {},
-                geometry: {
-                    type: 'LineString',
-                    coordinates: [],
-                },
-            });
-        }
-    };
+    // const clearRoute = () => {
+    //     if (map.getSource('route')) {
+    //         map.getSource('route').setData({
+    //             type: 'Feature',
+    //             properties: {},
+    //             geometry: {
+    //                 type: 'LineString',
+    //                 coordinates: [],
+    //             },
+    //         });
+    //     }
+    // };
 
-    const getRoute = (coordinates) => {
-        const waypoints = coordinates.map(coord => ({ coordinates: coord }));
-        directionsClient.getDirections({
-            profile: 'driving',
-            geometries: 'geojson',
-            waypoints: waypoints,
-        })
-            .send()
-            .then(response => {
-                const route = response.body.routes[0].geometry;
-                map.getSource('route').setData(route);
-            })
-            .catch(err => console.error('Error fetching directions:', err));
-    };
+    // const getRoute = (coordinates) => {
+    //     const waypoints = coordinates.map(coord => ({ coordinates: coord }));
+    //     directionsClient.getDirections({
+    //         profile: 'driving',
+    //         geometries: 'geojson',
+    //         waypoints: waypoints,
+    //     })
+    //         .send()
+    //         .then(response => {
+    //             const route = response.body.routes[0].geometry;
+    //             map.getSource('route').setData(route);
+    //         })
+    //         .catch(err => console.error('Error fetching directions:', err));
+    // };
 
     const handleViewRoute = (routeId) => {
         router.push(`/posts/${routeId}`); // Navigate to /posts/[routeId]
         setIsModalOpen(false); // Close the modal after navigation
-      };
+    };
 
     const loadMultipleRoutes = () => {
 
         routesData.routes?.forEach((route, index) => {
-            const coordinates = parseCoordinates(route.routes);
-            const routeIDParse = parseCoordinatesID(route.routes);
+            const coordinates = (route.route);
+            const routeIDParse = (route.id);
+            const routeSlug = (route.slug);
             const waypoints = coordinates.map(coord => ({ coordinates: coord }));
-
 
             directionsClient.getDirections({
                 profile: 'driving',
@@ -227,11 +226,10 @@ const MapboxDrawComponent = () => {
                     });
 
                     map.on('click', routeId, (e) => {
-                        console.log(routeIDParse)
                         const content = (
                             <div>
-                                <h3>Route {routeIDParse}</h3>
-                                <button onClick={() => handleViewRoute(routeIDParse)}>View Route</button>
+                                <h3>Route {route.title}</h3>
+                                <button onClick={() => handleViewRoute(routeSlug)}>View Route</button>
                             </div>
                         );
                         setModalContent(content);

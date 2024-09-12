@@ -13,7 +13,7 @@ export default function HomePageHero() {
                     src="https://images.pexels.com/photos/172484/pexels-photo-172484.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
                 ></Image>
                 <div className={styles.container}>
-                    <h2 className={styles.title}>Discover Safe  City Routes</h2>
+                    <h2 className={styles.title}>Discover City Routes</h2>
                     <p>A Curated List of Roads That are recommended routes for getting aound the city.</p>
                     <button className="goto">Find the best routes</button>
                 </div>
