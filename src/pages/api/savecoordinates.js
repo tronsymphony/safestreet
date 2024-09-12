@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import {generateSlug} from '../../lib/generateSlug';
 import pool from '../../lib/db';
 
 export default async function handler(req, res) {
@@ -24,9 +24,24 @@ export default async function handler(req, res) {
 
       const routeId = routeResult.rows[0].id;
 
+      let slug = generateSlug(postTitle);
+      let slugExists = true;
+      let attempt = 1;
+
+      while (slugExists) {
+        const existingSlug = await client.query('SELECT * FROM posts WHERE slug = $1', [slug]);
+        if (existingSlug.rows.length > 0) {
+          // If slug exists, modify the slug by appending a number
+          slug = `${generateSlug(postTitle)}-${attempt}`;
+          attempt += 1;
+        } else {
+          slugExists = false;
+        }
+      }
+
       const postResult = await client.query(
-        'INSERT INTO posts (title, content, route_id) VALUES ($1, $2, $3) RETURNING *',
-        [postTitle, postContent, routeId]
+        'INSERT INTO posts (title, content, route_id, slug) VALUES ($1, $2, $3, $4) RETURNING *',
+        [postTitle, postContent, routeId, slug]
       );
 
       await client.query('COMMIT');

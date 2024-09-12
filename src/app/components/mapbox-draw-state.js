@@ -17,12 +17,12 @@ const MapboxDrawComponent = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRouteId, setSelectedRouteId] = useState(null);
     const [postTitle, setPostTitle] = useState(''); // State to manage post title
-    const [postContent, setPostContent] = useState(''); 
+    const [postContent, setPostContent] = useState('');
     const [userLocation, setUserLocation] = useState({
         lat: 33.979215019959895,
         lng: -118.46648985815806
     }); // Default location
-    const [drawnRoute, setDrawnRoute] = useState(null); 
+    const [drawnRoute, setDrawnRoute] = useState(null);
     const mapInstance = useRef(null); // To store map instance without triggering re-renders
     const directionsClient = useMemo(
         () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
@@ -203,9 +203,9 @@ const MapboxDrawComponent = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     route: drawnRoute,
-                    postTitle: postTitle, 
+                    postTitle: postTitle,
                     postContent: postContent
                 }),
             });
@@ -268,7 +268,7 @@ const MapboxDrawComponent = () => {
                         type: 'geojson',
                         data: {
                             type: 'Feature',
-                            properties: { id: routeID},
+                            properties: { id: routeID },
                             geometry: route,
                         }
                     });
@@ -287,24 +287,6 @@ const MapboxDrawComponent = () => {
                             'line-opacity': 0.75
                         }
                     });
-
-//                     mapInstance.current.on('click', routeId, (e) => {
-//                         console.log(routeId)
-//                         const content = (
-//                             <div>
-//                                 <h3>Route {index + 1}</h3>
-//                                 <p>
-                                    
-//                                 </p>
-//                                 <button>
-// ccc
-//                                 </button>
-//                             </div>
-//                         );
-
-//                         setModalContent(content);
-//                         setIsModalOpen(true);
-//                     });
 
                     mapInstance.current.on('click', routeId, (e) => {
                         // const routeId = e.features[0].properties.id;
@@ -340,7 +322,7 @@ const MapboxDrawComponent = () => {
         if (firstNumber && firstNumber.length > 0) {
             return JSON.parse(firstNumber);
         }
-        
+
         return [];
     };
 
@@ -350,37 +332,41 @@ const MapboxDrawComponent = () => {
                 <div className="container">
                     <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
                 </div>
-                <button onClick={saveRoute} disabled={!drawnRoute}>
-                    Save Route
-                </button>
-                {selectedRouteId && (
-                    <div style={{ marginTop: '20px' }}>
-                    <label>
-                        Post Title:
-                        <input
-                        type="text"
-                        value={postTitle}
-                        onChange={(e) => setPostTitle(e.target.value)}
-                        style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
-                        />
-                    </label>
-                    <br />
-                    <label style={{ marginTop: '10px' }}>
-                        Post Content:
-                        <textarea
-                        value={postContent}
-                        onChange={(e) => setPostContent(e.target.value)}
-                        style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                        />
-                    </label>
-                    <br />
-                    <button onClick={saveRoute} style={{ marginTop: '10px' }}>
-                        Save Route
-                    </button>
-                    </div>
-                )}
-            </section>
             
+
+                {selectedRouteId && (
+                     <button onClick={deleteRoute}>
+                     Delete Route {selectedRouteId}
+                 </button>
+                )}
+
+                    <div style={{ marginTop: '20px' }}>
+                        <label>
+                            Post Title:
+                            <input
+                                type="text"
+                                value={postTitle}
+                                onChange={(e) => setPostTitle(e.target.value)}
+                                style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
+                            />
+                        </label>
+                        <br />
+                        <label style={{ marginTop: '10px' }}>
+                            Post Content:
+                            <textarea
+                                value={postContent}
+                                onChange={(e) => setPostContent(e.target.value)}
+                                style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
+                            />
+                        </label>
+                        <br />
+                        <button onClick={saveRoute} style={{ marginTop: '10px' }}>
+                            Save Route
+                        </button>
+                       
+                    </div>
+            </section>
+
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
         </>
     );

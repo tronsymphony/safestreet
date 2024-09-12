@@ -61,8 +61,6 @@ function RootContent({ children }) {
               <ul>
                 <li><Link href="/about">About</Link></li>
                 <li><Link href="/map">Map</Link></li>
-                <li><Link href="/press">Press</Link></li>
-
                 {session ? (
                   <>
                     <li><Link href="/profile">Profile</Link></li>

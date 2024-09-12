@@ -199,11 +199,9 @@ const MapboxDrawComponent = ({ routeId }) => {
                     });
 
                     mapInstance.current.on('click', routeId, (e) => {
-                        const clickedCoordinates = e.features[0].geometry.coordinates;
                         const content = (
                             <div>
                                 <h3>Route {index + 1}</h3>
-                                <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
                             </div>
                         );
                         setModalContent(content);

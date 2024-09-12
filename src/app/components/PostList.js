@@ -49,7 +49,7 @@ export default function PostListPage() {
                
               </CardContent>
               <CardActions>
-                <Link href={`/posts/${post.id}`} passHref>
+                <Link href={`/posts/${post.slug}`} passHref>
                   <Button variant="contained" color="primary">
                     Read More
                   </Button>

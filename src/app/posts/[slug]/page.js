@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, Card } from '@mui/material';
 import MapboxDrawComponent from "../../components/map-single-view";
 
-async function fetchPost(id) {
-  const res = await fetch(`/api/getpostbyid?id=${id}`);
+async function fetchPost(slug) {
+  const res = await fetch(`/api/getpostbyslug?slug=${slug}`);
   if (!res.ok) {
     throw new Error('Failed to fetch post');
   }
@@ -14,16 +14,15 @@ async function fetchPost(id) {
 }
 
 export default function PostPage({ params }) {
-  const { id } = params;
+  const { slug } = params; // Use slug from params
   const [post, setPost] = useState(null); // State to store the post data
   const [error, setError] = useState(null); // State to manage errors
-  const [pageId, setPageId] = useState(id); // Store pageId state
 
   // Fetch the post data using useEffect
   useEffect(() => {
     const getPost = async () => {
       try {
-        const fetchedPost = await fetchPost(id);
+        const fetchedPost = await fetchPost(slug); // Fetch post by slug
         setPost(fetchedPost); // Set post data in the state
       } catch (err) {
         setError('Failed to fetch post');
@@ -32,7 +31,7 @@ export default function PostPage({ params }) {
     };
 
     getPost(); // Call the fetch function
-  }, [id]); // Fetch post whenever the id changes
+  }, [slug]); // Fetch post whenever the slug changes
 
   // Handle the loading and error states
   if (error) {
@@ -97,7 +96,7 @@ export default function PostPage({ params }) {
         {content}
 
         {/* Mapbox component to show the route */}
-        <MapboxDrawComponent routeId={pageId} />
+        <MapboxDrawComponent routeId={post.route_id} />
       </Card>
     </Container>
   );
