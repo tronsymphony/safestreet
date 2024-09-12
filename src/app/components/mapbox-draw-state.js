@@ -15,10 +15,12 @@ const MapboxDrawComponent = () => {
     const [routesData, setRoutesData] = useState([]);
     const [modalContent, setModalContent] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedRouteId, setSelectedRouteId] = useState(null);
     const [userLocation, setUserLocation] = useState({
         lat: 33.979215019959895,
         lng: -118.46648985815806
     }); // Default location
+    const [drawnRoute, setDrawnRoute] = useState(null); 
     const mapInstance = useRef(null); // To store map instance without triggering re-renders
     const directionsClient = useMemo(
         () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
@@ -100,6 +102,7 @@ const MapboxDrawComponent = () => {
             const data = drawRef.current.getAll();
             if (data.features.length > 0) {
                 const coordinates = data.features[0].geometry.coordinates;
+                setDrawnRoute(coordinates); // Save the drawn route
 
                 // Convert the coordinates to waypoints for the Directions API
                 if (coordinates.length >= 2) {
@@ -155,6 +158,7 @@ const MapboxDrawComponent = () => {
                 }
             });
         }
+        setDrawnRoute(null);
     };
 
     // Function to get the snapped route from the Directions API
@@ -164,7 +168,7 @@ const MapboxDrawComponent = () => {
         // Get route snapped to streets
         directionsClient
             .getDirections({
-                profile: 'driving', // Use driving profile for biking routes
+                profile: 'cycling', // Use cycling profile for biking routes
                 geometries: 'geojson',
                 waypoints: waypoints
             })
@@ -184,14 +188,68 @@ const MapboxDrawComponent = () => {
             .catch((err) => console.error('Error fetching directions:', err));
     };
 
+    // Save the drawn route to the API
+    const saveRoute = async () => {
+        if (!drawnRoute) {
+            alert("No route drawn to save.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/savecoordinates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ route: drawnRoute }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert('Route saved successfully!');
+            } else {
+                alert(`Failed to save route: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error saving route:', error);
+            alert('An error occurred while saving the route.');
+        }
+    };
+
+    // Handle route deletion by ID
+    const deleteRoute = async () => {
+        if (!selectedRouteId) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/deleteroute?id=${selectedRouteId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                alert('Route deleted successfully!');
+                setSelectedRouteId(null); // Clear the selected route ID after deletion
+                fetchData(); // Refresh the route list after deletion
+            } else {
+                alert('Failed to delete the route');
+            }
+        } catch (error) {
+            console.error('Error deleting route:', error);
+            alert('An error occurred while deleting the route.');
+        }
+    };
+
     const loadMultipleRoutes = () => {
         routesData.routes?.forEach((route, index) => {
             const coordinates = parseCoordinates(route.routes);
             const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
+            const routeID = parseCoordinatesID(route);
 
             directionsClient
                 .getDirections({
-                    profile: 'driving', // Use driving profile for RideWithGPS-style routes
+                    profile: 'cycling', // Use cycling profile for RideWithGPS-style routes
                     geometries: 'geojson',
                     waypoints: waypoints
                 })
@@ -204,7 +262,7 @@ const MapboxDrawComponent = () => {
                         type: 'geojson',
                         data: {
                             type: 'Feature',
-                            properties: {},
+                            properties: { id: routeID},
                             geometry: route,
                         }
                     });
@@ -224,16 +282,22 @@ const MapboxDrawComponent = () => {
                         }
                     });
 
+                    // mapInstance.current.on('click', routeId, (e) => {
+                    //     const clickedCoordinates = e.features[0].geometry.coordinates;
+                    //     const content = (
+                    //         <div>
+                    //             <h3>Route {index + 1}</h3>
+                    //             <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
+                    //         </div>
+                    //     );
+                    //     setModalContent(content);
+                    //     setIsModalOpen(true);
+                    // });
+
                     mapInstance.current.on('click', routeId, (e) => {
-                        const clickedCoordinates = e.features[0].geometry.coordinates;
-                        const content = (
-                            <div>
-                                <h3>Route {index + 1}</h3>
-                                <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
-                            </div>
-                        );
-                        setModalContent(content);
-                        setIsModalOpen(true);
+                        // const routeId = e.features[0].properties.id;
+                        setSelectedRouteId(routeID); // Set the selected route ID
+                        alert(`Route ${routeID} selected`);
                     });
 
                     mapInstance.current.on('mouseenter', routeId, () => {
@@ -258,13 +322,32 @@ const MapboxDrawComponent = () => {
         return [];
     };
 
+    const parseCoordinatesID = (str) => {
+        const firstNumber = str.routes.match(/\((\d+)/)[1];
+
+        if (firstNumber && firstNumber.length > 0) {
+            return JSON.parse(firstNumber);
+        }
+        
+        return [];
+    };
+
     return (
         <>
             <section className="main-map">
                 <div className="container">
                     <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
                 </div>
+                <button onClick={saveRoute} disabled={!drawnRoute}>
+                    Save Route
+                </button>
+                {selectedRouteId && (
+                    <button onClick={deleteRoute}>
+                        Delete Route {selectedRouteId}
+                    </button>
+                )}
             </section>
+            
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
         </>
     );

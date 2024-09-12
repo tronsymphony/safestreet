@@ -1,6 +1,3 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
-// pages/api/signup.js
 import bcrypt from 'bcryptjs';
 import pool from '../../lib/db';
 
