@@ -13,9 +13,16 @@ exports.up = (pgm) => {
       id: 'id',
       title: { type: 'text', notNull: true },
       content: { type: 'text', notNull: true },
+      route_id: {
+        type: 'integer', 
+        notNull: true, 
+        references: '"routes"', // Add foreign key to routes table
+        onDelete: 'CASCADE' // If a route is deleted, its associated posts are also deleted
+      },
       created_at: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
       updated_at: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
     });
+    pgm.createIndex('posts', 'route_id');
   };
 
 /**

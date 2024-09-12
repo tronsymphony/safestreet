@@ -1,5 +1,6 @@
 'use client'
 import React, { useRef, useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter for navigation
 import mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import MapboxDirections from '@mapbox/mapbox-sdk/services/directions';
@@ -8,6 +9,7 @@ import Modal from './Modal';
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
 const MapboxDrawComponent = () => {
+    const router = useRouter();
     const mapContainerRef = useRef(null);
     const [map, setMap] = useState(null);
     const [draw, setDraw] = useState(null);
@@ -35,6 +37,16 @@ const MapboxDrawComponent = () => {
         if (matches && matches.length > 0) {
             return JSON.parse(matches[0]);
         }
+        return [];
+    };
+
+    const parseCoordinatesID = (str) => {
+        const firstNumber = str.match(/\((\d+)/)[1];
+
+        if (firstNumber && firstNumber.length > 0) {
+            return JSON.parse(firstNumber);
+        }
+        
         return [];
     };
 
@@ -171,11 +183,18 @@ const MapboxDrawComponent = () => {
             .catch(err => console.error('Error fetching directions:', err));
     };
 
+    const handleViewRoute = (routeId) => {
+        router.push(`/posts/${routeId}`); // Navigate to /posts/[routeId]
+        setIsModalOpen(false); // Close the modal after navigation
+      };
+
     const loadMultipleRoutes = () => {
 
         routesData.routes?.forEach((route, index) => {
             const coordinates = parseCoordinates(route.routes);
+            const routeIDParse = parseCoordinatesID(route.routes);
             const waypoints = coordinates.map(coord => ({ coordinates: coord }));
+
 
             directionsClient.getDirections({
                 profile: 'driving',
@@ -208,11 +227,11 @@ const MapboxDrawComponent = () => {
                     });
 
                     map.on('click', routeId, (e) => {
-                        const clickedCoordinates = e.features[0].geometry.coordinates;
+                        console.log(routeIDParse)
                         const content = (
                             <div>
-                                <h3>Route {index + 1}</h3>
-                                <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
+                                <h3>Route {routeIDParse}</h3>
+                                <button onClick={() => handleViewRoute(routeIDParse)}>View Route</button>
                             </div>
                         );
                         setModalContent(content);

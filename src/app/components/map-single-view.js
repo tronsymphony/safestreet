@@ -9,15 +9,13 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
-const MapboxDrawComponent = () => {
+const MapboxDrawComponent = ({ routeId }) => {
     const mapContainerRef = useRef(null);
     const drawRef = useRef(null); // Use useRef to store draw control
     const [routesData, setRoutesData] = useState([]);
     const [modalContent, setModalContent] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRouteId, setSelectedRouteId] = useState(null);
-    const [postTitle, setPostTitle] = useState(''); // State to manage post title
-    const [postContent, setPostContent] = useState(''); 
     const [userLocation, setUserLocation] = useState({
         lat: 33.979215019959895,
         lng: -118.46648985815806
@@ -31,7 +29,7 @@ const MapboxDrawComponent = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/getroutes');
+            const response = await fetch(`http://localhost:3000/api/getroute?id=${routeId}`);
             const data = await response.json();
             setRoutesData(data);
         } catch (error) {
@@ -57,7 +55,7 @@ const MapboxDrawComponent = () => {
     }, []);
 
     useEffect(() => {
-        if (mapInstance.current && routesData.routes && routesData.routes.length > 0) {
+        if (mapInstance.current && routesData.route && routesData.route.length > 0) {
             loadMultipleRoutes();
         }
     }, [routesData]);
@@ -86,39 +84,6 @@ const MapboxDrawComponent = () => {
             zoom: 13
         });
 
-        // Initialize MapboxDraw and store it in the ref
-        drawRef.current = new MapboxDraw({
-            displayControlsDefault: false,
-            controls: {
-                line_string: true,
-                trash: true,
-            },
-            defaultMode: 'draw_line_string', // Mode for drawing line strings
-        });
-
-        // Set the draw control in the map instance
-        mapInstance.current.addControl(drawRef.current);
-
-        // Update route by snapping it to streets using the Mapbox Directions API
-        const updateRoute = (e) => {
-            const data = drawRef.current.getAll();
-            if (data.features.length > 0) {
-                const coordinates = data.features[0].geometry.coordinates;
-                setDrawnRoute(coordinates); // Save the drawn route
-
-                // Convert the coordinates to waypoints for the Directions API
-                if (coordinates.length >= 2) {
-                    getSnappedRoute(coordinates);
-                }
-            }
-        };
-
-        // Listen to draw.create and draw.update events to allow route drawing and editing
-        mapInstance.current.on('draw.create', updateRoute);
-        mapInstance.current.on('draw.update', updateRoute);
-        mapInstance.current.on('draw.delete', clearRoute);
-
-        // When the map is loaded, set up the route source and layer
         mapInstance.current.on('load', () => {
             mapInstance.current.addSource('route', {
                 type: 'geojson',
@@ -190,68 +155,13 @@ const MapboxDrawComponent = () => {
             .catch((err) => console.error('Error fetching directions:', err));
     };
 
-    // Save the drawn route to the API
-    const saveRoute = async () => {
-        if (!drawnRoute) {
-            console.log("No route drawn to save.");
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/savecoordinates', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    route: drawnRoute,
-                    postTitle: postTitle, 
-                    postContent: postContent
-                }),
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                console.log('Route saved successfully!');
-            } else {
-                console.log(`Failed to save route: ${data.error}`);
-            }
-        } catch (error) {
-            console.error('Error saving route:', error);
-            console.log('An error occurred while saving the route.');
-        }
-    };
-
-    // Handle route deletion by ID
-    const deleteRoute = async () => {
-        if (!selectedRouteId) return;
-
-        try {
-            const response = await fetch(`http://localhost:3000/api/deleteroute?id=${selectedRouteId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                // console.log('Route deleted successfully!');
-                setSelectedRouteId(null); // Clear the selected route ID after deletion
-                fetchData(); // Refresh the route list after deletion
-            } else {
-                console.log('Failed to delete the route');
-            }
-        } catch (error) {
-            console.error('Error deleting route:', error);
-            console.log('An error occurred while deleting the route.');
-        }
-    };
 
     const loadMultipleRoutes = () => {
-        routesData.routes?.forEach((route, index) => {
-            const coordinates = parseCoordinates(route.routes);
+        routesData.route?.forEach((route, index) => {
+            const coordinates = route.route
+
             const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
-            const routeID = parseCoordinatesID(route);
+            const routeID = route.id;
 
             directionsClient
                 .getDirections({
@@ -288,23 +198,17 @@ const MapboxDrawComponent = () => {
                         }
                     });
 
-//                     mapInstance.current.on('click', routeId, (e) => {
-//                         console.log(routeId)
-//                         const content = (
-//                             <div>
-//                                 <h3>Route {index + 1}</h3>
-//                                 <p>
-                                    
-//                                 </p>
-//                                 <button>
-// ccc
-//                                 </button>
-//                             </div>
-//                         );
-
-//                         setModalContent(content);
-//                         setIsModalOpen(true);
-//                     });
+                    mapInstance.current.on('click', routeId, (e) => {
+                        const clickedCoordinates = e.features[0].geometry.coordinates;
+                        const content = (
+                            <div>
+                                <h3>Route {index + 1}</h3>
+                                <p>Coordinates: {JSON.stringify(clickedCoordinates)}</p>
+                            </div>
+                        );
+                        setModalContent(content);
+                        setIsModalOpen(true);
+                    });
 
                     mapInstance.current.on('click', routeId, (e) => {
                         // const routeId = e.features[0].properties.id;
@@ -326,59 +230,12 @@ const MapboxDrawComponent = () => {
         });
     };
 
-    const parseCoordinates = (str) => {
-        const matches = str.match(/\[.*\]/);
-        if (matches && matches.length > 0) {
-            return JSON.parse(matches[0]);
-        }
-        return [];
-    };
-
-    const parseCoordinatesID = (str) => {
-        const firstNumber = str.routes.match(/\((\d+)/)[1];
-
-        if (firstNumber && firstNumber.length > 0) {
-            return JSON.parse(firstNumber);
-        }
-        
-        return [];
-    };
-
     return (
         <>
             <section className="main-map">
                 <div className="container">
                     <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
                 </div>
-                <button onClick={saveRoute} disabled={!drawnRoute}>
-                    Save Route
-                </button>
-                {selectedRouteId && (
-                    <div style={{ marginTop: '20px' }}>
-                    <label>
-                        Post Title:
-                        <input
-                        type="text"
-                        value={postTitle}
-                        onChange={(e) => setPostTitle(e.target.value)}
-                        style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
-                        />
-                    </label>
-                    <br />
-                    <label style={{ marginTop: '10px' }}>
-                        Post Content:
-                        <textarea
-                        value={postContent}
-                        onChange={(e) => setPostContent(e.target.value)}
-                        style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                        />
-                    </label>
-                    <br />
-                    <button onClick={saveRoute} style={{ marginTop: '10px' }}>
-                        Save Route
-                    </button>
-                    </div>
-                )}
             </section>
             
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />

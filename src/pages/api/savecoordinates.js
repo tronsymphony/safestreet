@@ -3,24 +3,45 @@ import pool from '../../lib/db';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const { route } = req.body;
+    const { route, postTitle, postContent } = req.body;
 
-    if (!route) {
-      return res.status(400).json({ error: 'lat and lng are required' });
+    if (!route || !postTitle || !postContent) {
+      return res.status(400).json({ error: 'Route, post title, and post content are required' });
     }
 
+    const client = await pool.connect(); // Start a transaction
+
     try {
+
+      await client.query('BEGIN'); // Start transaction
+      
       const coordinatesJson = JSON.stringify(route);
 
-      const result = await pool.query(
-        'INSERT INTO routes (route) VALUES ($1) RETURNING *',
+      const routeResult = await client.query(
+        'INSERT INTO routes (route) VALUES ($1) RETURNING id',
         [coordinatesJson]
       );
 
-      res.status(201).json({ route: result.rows[0] });
+      const routeId = routeResult.rows[0].id;
+
+      const postResult = await client.query(
+        'INSERT INTO posts (title, content, route_id) VALUES ($1, $2, $3) RETURNING *',
+        [postTitle, postContent, routeId]
+      );
+
+      await client.query('COMMIT');
+
+      res.status(201).json({
+        route: routeResult.rows[0],
+        post: postResult.rows[0],
+      });
+      
     } catch (error) {
-      console.error('Error inserting route:', error);
-      res.status(500).json({ error: 'route registration failed' });
+      await client.query('ROLLBACK'); // Rollback transaction on error
+      console.error('Error inserting route and post:', error);
+      res.status(500).json({ error: 'Route and post registration failed' });
+    } finally {
+      client.release(); // Release the client back to the pool
     }
   } else {
     res.setHeader('Allow', ['POST']);
