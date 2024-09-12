@@ -1,4 +1,3 @@
-// context/SessionContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 import cookie from 'js-cookie';
 import jwt from 'jsonwebtoken';
@@ -10,13 +9,23 @@ export const SessionProvider = ({ children }) => {
 
   useEffect(() => {
     const token = cookie.get('token');
+    
     if (token) {
       try {
         const decoded = jwt.decode(token);
-        setSession(decoded);
+
+        // Check if the token has expired
+        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+          console.log('Token has expired');
+          setSession(null);
+          cookie.remove('token'); // Remove the expired token
+        } else {
+          setSession(decoded); // Token is valid, set the session
+        }
       } catch (error) {
         console.error('Invalid token:', error);
         setSession(null);
+        cookie.remove('token'); // Remove the invalid token
       }
     }
   }, []);
