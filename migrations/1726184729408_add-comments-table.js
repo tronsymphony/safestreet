@@ -17,6 +17,12 @@ exports.up = (pgm) => {
           references: '"posts"', // Foreign key to posts table
           onDelete: 'CASCADE' // If a post is deleted, its comments are also deleted
         },
+        author_id: {
+          type: 'integer',
+          notNull: true,
+          references: '"users"',
+          onDelete: 'CASCADE', // If a user is deleted, their comments are also deleted
+        },
         author: { type: 'varchar(255)', notNull: true },
         content: { type: 'text', notNull: true },
         created_at: { type: 'timestamp', notNull: true, default: pgm.func('current_timestamp') },
