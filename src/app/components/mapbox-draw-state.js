@@ -249,9 +249,9 @@ const MapboxDrawComponent = () => {
 
     const loadMultipleRoutes = () => {
         routesData.routes?.forEach((route, index) => {
-            const coordinates = parseCoordinates(route.routes);
+            const coordinates = (route.route);
             const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
-            const routeID = parseCoordinatesID(route);
+            const routeID = (route.id);
 
             directionsClient
                 .getDirections({
@@ -309,6 +309,8 @@ const MapboxDrawComponent = () => {
     };
 
     const parseCoordinates = (str) => {
+        console.log(str);
+        
         const matches = str.match(/\[.*\]/);
         if (matches && matches.length > 0) {
             return JSON.parse(matches[0]);

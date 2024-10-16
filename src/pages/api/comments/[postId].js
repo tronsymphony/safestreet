@@ -23,8 +23,8 @@ export default async function handler(req, res) {
 
     try {
       const result = await pool.query(
-        'INSERT INTO comments (post_id, content, author) VALUES ($1, $2, $3) RETURNING *',
-        [postId, content, author]
+        'INSERT INTO comments (post_id, content, author, author_id) VALUES ($1, $2, $3) RETURNING *',
+        [postId, content, author, author_id]
       );
       return res.status(201).json({ comment: result.rows[0] });
     } catch (error) {

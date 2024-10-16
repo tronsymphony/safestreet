@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, Card, TextField, Button } from '@mui/material';
 import MapboxDrawComponent from "../../components/map-single-view";
-import { useSession, SessionProvider } from '../../../lib/SessionContext';
+import { useSession } from '../../../lib/SessionContext';
 
 // Fetch post by slug
 async function fetchPost(slug) {
@@ -27,11 +27,11 @@ async function fetchComments(postId) {
 }
 
 // Submit a new comment
-async function submitComment(postId, author, content) {
+async function submitComment(postId, author, content, author_id) {
   const res = await fetch(`/api/comments/${postId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ author, content }),
+    body: JSON.stringify({ author, content, author_id }),
   });
 
   if (!res.ok) {
@@ -48,50 +48,13 @@ export default function PostPage({ params }) {
   const [comments, setComments] = useState([]); // State to store comments
   const [newComment, setNewComment] = useState(''); // State to manage new comment content
   const [author, setAuthor] = useState(''); // State to manage the comment author
-  const { session, setSession } = useSession();
+  const { session } = useSession();
   const [loading, setLoading] = useState(true);
 
-  const handleEditComment = async (commentId) => {
-    try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
-        body: JSON.stringify({ content: editingContent }),
-      });
-
-      if (response.ok) {
-        const updatedComment = await response.json();
-        setComments((prevComments) =>
-          prevComments.map((comment) =>
-            comment.id === updatedComment.comment.id ? updatedComment.comment : comment
-          )
-        );
-        setEditingCommentId(null);
-        setEditingContent('');
-      }
-    } catch (error) {
-      console.error('Error updating comment:', error);
-    }
-  };
-
-  const handleDeleteComment = async (commentId) => {
-    try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${session.token}` },
-      });
-
-      if (response.ok) {
-        setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId));
-      }
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-    }
-  };
-
   useEffect(() => {
+    // Check if session is available, stop loading
     if (session) {
-      setLoading(false);  // Session is loaded, stop loading
+      setLoading(false);
     }
   }, [session]);
 
@@ -193,8 +156,8 @@ export default function PostPage({ params }) {
         )}
       </Box>
 
-      {session?.role === 'admin' || session?.role === 'subscriber' && (
-
+      {/* Comment form only loads when session is present */}
+      {session && (session.role === 'admin' || session.role === 'subscriber') && (
         <Box mt={4}>
           <Typography variant="h6" gutterBottom>Add a Comment</Typography>
           <TextField
@@ -218,44 +181,6 @@ export default function PostPage({ params }) {
           </Button>
         </Box>
       )}
-
-      <Typography variant="h5">Comments</Typography>
-      {comments.map((comment) => (
-        <Card key={comment.id} elevation={1} style={{ marginBottom: '1rem', padding: '1rem' }}>
-          <Typography variant="subtitle1">{comment.author}</Typography>
-          <Typography variant="body2">{new Date(comment.created_at).toLocaleString()}</Typography>
-          
-          {editingCommentId === comment.id ? (
-            <TextField
-              fullWidth
-              value={editingContent}
-              onChange={(e) => setEditingContent(e.target.value)}
-              multiline
-              rows={3}
-            />
-          ) : (
-            <Typography variant="body1">{comment.content}</Typography>
-          )}
-
-          {(session.user.id === comment.author_id || session.user.role === 'admin') && (
-            <>
-              <Button onClick={() => handleDeleteComment(comment.id)} color="secondary">
-                Delete
-              </Button>
-              {editingCommentId === comment.id ? (
-                <Button onClick={() => handleEditComment(comment.id)} color="primary">
-                  Save
-                </Button>
-              ) : (
-                <Button onClick={() => { setEditingCommentId(comment.id); setEditingContent(comment.content); }} color="primary">
-                  Edit
-                </Button>
-              )}
-            </>
-          )}
-        </Card>
-      ))}
-
     </Container>
   );
 }
