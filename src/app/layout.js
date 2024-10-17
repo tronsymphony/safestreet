@@ -2,6 +2,7 @@
 import { useSession, SessionProvider } from '../lib/SessionContext';
 import { Manrope } from "next/font/google";
 import "./globals.scss";
+
 import Link from 'next/link'
 import styles from "./page.module.scss";
 import { useRouter } from 'next/navigation'
