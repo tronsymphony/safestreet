@@ -92,25 +92,6 @@ a {
   padding: 0 1rem;
 }
 
-.main-header {
-  padding: 2rem 0;
-
-  .container {
-    max-width: 1220px;
-    margin: 0 auto;
-    padding: 0 1rem;
-    display: flex;
-    justify-content: space-between;
-
-    .nav ul {
-      display: flex;
-      list-style: none;
-      gap: 2rem;
-
-    }
-  }
-}
-
 .goto {
   background-color: #64f67b;
   color: #142800;

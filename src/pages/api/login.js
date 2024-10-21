@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
     // Set the JWT token in an HTTP-only cookie
     const isProduction = process.env.NODE_ENV === 'production';
-    res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Path=/; Max-Age=86400;${isProduction ? ' Secure;' : ''} SameSite=Strict`);
+    res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Path=/; Max-Age=3600;${isProduction ? ' Secure;' : ''} SameSite=Strict`);
 
     // Return success response along with basic user information
     return res.status(200).json({ message: 'Login successful', user: { id: user.id, email: user.email, role: user.role } });

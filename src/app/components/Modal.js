@@ -1,5 +1,5 @@
-// components/Modal.js
 import React from 'react';
+import { XMarkIcon } from '@heroicons/react/24/solid'
 
 const Modal = ({ isOpen, onClose, content }) => {
     if (!isOpen) return null;
@@ -18,11 +18,11 @@ const Modal = ({ isOpen, onClose, content }) => {
         }}>
             <div style={{
                 background: '#fff',
-                padding: '20px',
-                borderRadius: '8px',
-                width: '50%',
+                borderRadius: '4px',
+                width: '75vw',
+                position:'relative'
             }}>
-                <button onClick={onClose} style={{ float: 'right', cursor: 'pointer' }}>Close</button>
+                <button onClick={onClose} className='absolute top-4 right-4'><XMarkIcon className='size-6'></XMarkIcon></button>
                 <div>{content}</div>
             </div>
         </div>

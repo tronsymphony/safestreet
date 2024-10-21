@@ -40,15 +40,15 @@ function RootContent({ children }) {
         <title>Safe Streets Map</title>
       </head>
       <body className={manrope.className}>
-        <header className="main-header">
-          <div className="container">
+        <header className="main-header px-2 py-6">
+          <div className="max-w-6xl mx-auto flex justify-between">
             <div className={styles.logo}>
               <Link href="/">
                 Safe Streets Map
               </Link>
             </div>
             <nav className="nav">
-              <ul>
+              <ul className='flex gap-4'>
                 <li><Link href="/about">About</Link></li>
                 <li><Link href="/map">Map</Link></li>
                 {session ? (

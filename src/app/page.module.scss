@@ -293,7 +293,6 @@ section.pageright {
   .pagerighttricolumns {
     display: flex;
     gap: 3rem;
-    max-width: 1220px;
     margin: 0 auto;
      > div{
       background-color: #eee;
@@ -314,7 +313,7 @@ section.pageright {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 0 3rem;
+    padding: 0 0 7rem;
     text-align: center;
   }
 }

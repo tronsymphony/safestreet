@@ -54,7 +54,7 @@ export default function PostPage({ params }) {
   useEffect(() => {
     // Check if session is available, stop loading
     if (session) {
-      setLoading(false);
+      // setLoading(false);
     }
   }, [session]);
 
@@ -92,15 +92,7 @@ export default function PostPage({ params }) {
     }
   };
 
-  if (loading) {
-    return (
-      <Container maxWidth="md" style={{ padding: '4rem 0' }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Loading...
-        </Typography>
-      </Container>
-    );
-  }
+
 
   // Handle the loading and error states
   if (error) {

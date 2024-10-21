@@ -21,6 +21,7 @@
     "@editorjs/paragraph": "^2.11.6",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@heroicons/react": "^2.1.5",
     "@mapbox/mapbox-gl-draw": "^1.4.3",
     "@mapbox/mapbox-sdk": "^0.16.0",
     "@mui/material": "^6.0.0",
