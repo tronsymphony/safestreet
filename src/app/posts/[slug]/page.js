@@ -1,8 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, Card, TextField, Button } from '@mui/material';
 import MapboxDrawComponent from "../../components/map-single-view";
-import { useSession } from '../../../lib/SessionContext';
+import { getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 // Fetch post by slug
 async function fetchPost(slug) {
@@ -48,17 +48,23 @@ export default function PostPage({ params }) {
   const [comments, setComments] = useState([]); // State to store comments
   const [newComment, setNewComment] = useState(''); // State to manage new comment content
   const [author, setAuthor] = useState(''); // State to manage the comment author
-  const { session } = useSession();
-  const [loading, setLoading] = useState(true);
+
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state for initial data fetch
+  const router = useRouter();
 
   useEffect(() => {
-    // Check if session is available, stop loading
-    if (session) {
-      // setLoading(false);
-    }
-  }, [session]);
+    getSession().then((session) => {
+      if (!session) {
+        router.push("/auth/signin");
+      } else {
+        setSession(session);
+        setLoading(false); // Loading finished once session is retrieved
+      }
+    });
+  }, [router]);
 
-  // Fetch the post data using useEffect
+  // Move getPost function inside useEffect to access slug properly
   useEffect(() => {
     const getPost = async () => {
       try {
@@ -72,8 +78,8 @@ export default function PostPage({ params }) {
       }
     };
 
-    getPost(); // Call the fetch function
-  }, [slug]); // Fetch post whenever the slug changes
+    getPost(); // Call the function to fetch the post data
+  }, [slug]); // Ensure this effect runs when `slug` changes
 
   // Handle comment submission
   const handleCommentSubmit = async () => {
@@ -92,87 +98,77 @@ export default function PostPage({ params }) {
     }
   };
 
-
-
   // Handle the loading and error states
   if (error) {
     return (
-      <Container maxWidth="md">
-        <Card elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
-          <Typography variant="h4" component="h1" gutterBottom>Error</Typography>
-          <Typography variant="body1">Could not fetch the post. Please try again later.</Typography>
-        </Card>
-      </Container>
+      <div className="container mx-auto p-6 mt-10 bg-white shadow-md rounded-lg">
+        <h1 className="text-3xl font-bold mb-4">Error</h1>
+        <p>Could not fetch the post. Please try again later.</p>
+      </div>
     );
   }
 
-  if (!post) {
+  if (!post || loading) {
     return (
-      <Container maxWidth="md">
-        <Card elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
-          <Typography variant="h4" component="h1" gutterBottom>Loading...</Typography>
-        </Card>
-      </Container>
+      <div className="container mx-auto p-6 mt-10 bg-white shadow-md rounded-lg">
+        <h1 className="text-3xl font-bold mb-4">Loading...</h1>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="md" style={{ padding: '2rem 0' }}>
-      <Card elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
-        <Typography variant="h2" component="h1" gutterBottom>{post.title}</Typography>
-        <Typography variant="caption" display="block" gutterBottom>
-          Posted on: {new Date(post.created_at).toLocaleDateString()}
-        </Typography>
-
-        <Box dangerouslySetInnerHTML={{ __html: post.content }} />
-
+    <div className="container mx-auto p-6 mt-10 bg-white shadow-md rounded-lg">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+        <p className="text-gray-600">Posted on: {new Date(post.created_at).toLocaleDateString()}</p>
+        <div className="mt-4" dangerouslySetInnerHTML={{ __html: post.content }} />
         {/* Mapbox component to show the route */}
         <MapboxDrawComponent routeId={post.route_id} />
-      </Card>
+      </div>
 
       {/* Comments section */}
-      <Box mt={4}>
-        <Typography variant="h5" gutterBottom>Comments</Typography>
+      <div className="mt-10">
+        <h2 className="text-2xl font-semibold mb-4">Comments</h2>
 
-        {/* Display comments */}
         {comments.length > 0 ? (
           comments.map((comment) => (
-            <Card key={comment.id} elevation={1} style={{ marginBottom: '1rem', padding: '1rem' }}>
-              <Typography variant="subtitle1">{comment.author}</Typography>
-              <Typography variant="body2">{new Date(comment.created_at).toLocaleString()}</Typography>
-              <Typography variant="body1" style={{ marginTop: '0.5rem' }}>{comment.content}</Typography>
-            </Card>
+            <div key={comment.id} className="mb-4 p-4 bg-gray-100 rounded-lg shadow-sm">
+              <p className="font-bold">{comment.author}</p>
+              <p className="text-gray-500 text-sm">{new Date(comment.created_at).toLocaleString()}</p>
+              <p className="mt-2">{comment.content}</p>
+            </div>
           ))
         ) : (
-          <Typography>No comments yet. Be the first to comment!</Typography>
+          <p>No comments yet. Be the first to comment!</p>
         )}
-      </Box>
+      </div>
 
       {/* Comment form only loads when session is present */}
-      {session && (session.role === 'admin' || session.role === 'subscriber') && (
-        <Box mt={4}>
-          <Typography variant="h6" gutterBottom>Add a Comment</Typography>
-          <TextField
-            label="Name"
-            fullWidth
+      {session && (
+        <div className="mt-10">
+          <h2 className="text-xl font-semibold mb-4">Add a Comment</h2>
+          <input
+            type="text"
+            placeholder="Name"
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
-            margin="normal"
+            className="w-full p-2 mb-4 border border-gray-300 rounded-md"
           />
-          <TextField
-            label="Comment"
-            fullWidth
-            multiline
-            rows={4}
+          <textarea
+            placeholder="Comment"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            margin="normal"
+            className="w-full p-2 mb-4 border border-gray-300 rounded-md"
+            rows="4"
           />
-          <Button variant="contained" color="primary" onClick={handleCommentSubmit}>
+          <button
+            onClick={handleCommentSubmit}
+            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+          >
             Submit Comment
-          </Button>
-        </Box>
+          </button>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }

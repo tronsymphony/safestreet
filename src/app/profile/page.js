@@ -1,60 +1,51 @@
-'use client'
+'use client';
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Grid, Card, CardContent, Button, CardActions } from '@mui/material';
 import Link from 'next/link';
 import PostListPage from '../components/PostList';
-// import RouteList from '../../components/RouteList';
-import { useSession, SessionProvider } from '../../lib/SessionContext';
+import { getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function ManagePage() {
-  const { session, setSession } = useSession();
-  const [loading, setLoading] = useState(true);
+
+  const [session, setSession] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    if (session) {
-      setLoading(false);  // Session is loaded, stop loading
-    }
-  }, [session]);
+    getSession().then((session) => {
+      if (!session) {
+        router.push("/auth/signin");
+      } else {
+        setSession(session);
+      }
+    });
+  }, [router]);
 
-  if (loading) {
-    return (
-      <Container maxWidth="md" style={{ padding: '4rem 0' }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Loading...
-        </Typography>
-      </Container>
-    );
+  if (!session) {
+    return <div className="text-center mt-10">Loading...</div>;
   }
 
   return (
-    <Container maxWidth="md" style={{ padding: '4rem 0' }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Manage Your Content
-      </Typography>
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
+    <div className="container mx-auto py-16">
+      <h1 className="text-3xl font-semibold text-center">Welcome, {session.user.email}</h1>
+      <h2 className="text-4xl font-bold mt-10 text-center">Manage Your Content</h2>
+
+      <div className="mt-10 grid grid-cols-1 gap-8">
+        <div>
+          {/* PostList component */}
           <PostListPage />
-        </Grid>
+        </div>
 
         {session?.role === 'admin' && (
-
-          <Grid item xs={12}>
-            <Typography variant="h5" component="h2" gutterBottom>
-              Your Routes
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              href="/map/edit"
-            >
-              Add Routes
-            </Button>
-            {/* <RouteList routes={routes} /> */}
-          </Grid>
+          <div>
+            <h3 className="text-2xl font-semibold mb-4">Your Routes</h3>
+            <Link href="/map/edit">
+              <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
+                Add Routes
+              </button>
+            </Link>
+          </div>
         )}
-
-      </Grid>
-    </Container>
+      </div>
+    </div>
   );
 }

@@ -1,18 +1,10 @@
-'use client'
-import { useSession, SessionProvider } from '../lib/SessionContext';
-import { Manrope } from "next/font/google";
+'use client';
+
+import { SessionProvider, useSession, signIn, signOut } from "next-auth/react";
 import "./globals.scss";
-
-import Link from 'next/link'
+import Link from 'next/link';
 import styles from "./page.module.scss";
-import { useRouter } from 'next/navigation'
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  style: ['normal'],
-  display: 'swap',
-});
+import { useRouter } from 'next/navigation';
 
 export default function RootLayout({ children }) {
   return (
@@ -23,13 +15,10 @@ export default function RootLayout({ children }) {
 }
 
 function RootContent({ children }) {
-  const { session, setSession } = useSession();
-  const router = useRouter();
+  const { data: session, status } = useSession();  // Get session data
 
   const handleLogout = () => {
-    document.cookie = 'token=; Max-Age=0; path=/'; // Remove cookie
-    setSession(null); // Clear session in context
-    router.push('/'); // Redirect to home page
+    signOut({ callbackUrl: '/' });  // Use NextAuth's signOut
   };
 
   return (
@@ -39,7 +28,7 @@ function RootContent({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Safe Streets Map</title>
       </head>
-      <body className={manrope.className}>
+      <body>
         <header className="main-header px-2 py-6">
           <div className="max-w-6xl mx-auto flex justify-between">
             <div className={styles.logo}>
@@ -48,10 +37,11 @@ function RootContent({ children }) {
               </Link>
             </div>
             <nav className="nav">
-              <ul className='flex gap-4'>
+              <ul className="flex gap-4">
                 <li><Link href="/about">About</Link></li>
                 <li><Link href="/map">Map</Link></li>
-                {session ? (
+                {status === "authenticated" ? (
+                  // Show these links if the user is authenticated
                   <>
                     <li><Link href="/profile">Profile</Link></li>
                     <li>
@@ -61,6 +51,7 @@ function RootContent({ children }) {
                     </li>
                   </>
                 ) : (
+                  // Show login and signup links if the user is not authenticated
                   <>
                     <li><Link href="/login">Login</Link></li>
                     <li><Link href="/signup">Sign up</Link></li>
