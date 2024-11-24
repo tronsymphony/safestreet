@@ -28,6 +28,9 @@ const MapboxDrawComponent = () => {
         () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
         []
     );
+    const [featuredImage, setFeaturedImage] = useState('');
+    const [routeCondition, setRouteCondition] = useState('');
+    const [routeCity, setRouteCity] = useState('');
 
     const fetchData = async () => {
         try {
@@ -37,6 +40,11 @@ const MapboxDrawComponent = () => {
         } catch (error) {
             console.error('Error fetching data:', error);
         }
+    };
+
+    // Handle featured image file upload
+    const handleFeaturedImageChange = (e) => {
+        setFeaturedImage(e.target.files[0]);
     };
 
     useEffect(() => {
@@ -197,6 +205,26 @@ const MapboxDrawComponent = () => {
             return;
         }
 
+        let imageUrl = '';
+
+        if (featuredImage) {
+            const formData = new FormData();
+            formData.append('file', featuredImage);
+
+            const uploadRes = await fetch('/api/uploadImage', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const uploadData = await uploadRes.json();
+
+            if (uploadRes.ok) {
+                imageUrl = uploadData.filePath;
+            } else {
+                return;
+            }
+        }
+
         try {
             const response = await fetch('/api/savecoordinates', {
                 method: 'POST',
@@ -205,8 +233,11 @@ const MapboxDrawComponent = () => {
                 },
                 body: JSON.stringify({
                     route: drawnRoute,
-                    postTitle: postTitle,
-                    postContent: postContent
+                    postTitle,
+                    postContent,
+                    imageUrl,
+                    routeCondition,
+                    routeCity,
                 }),
             });
 
@@ -308,7 +339,7 @@ const MapboxDrawComponent = () => {
         });
     };
 
-   
+
     return (
         <>
             <section className="main-map">
@@ -323,15 +354,33 @@ const MapboxDrawComponent = () => {
                 )}
 
                 <div style={{ marginTop: '20px' }}>
-                    <label>
-                        Featured Image:
+                    <div>
+                        <label className="block text-gray-700 font-medium mb-2">Featured Image</label>
                         <input
-                            type="text"
-                            value={postTitle}
-                            onChange={(e) => setPostTitle(e.target.value)}
-                            style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFeaturedImageChange}
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                        />
+                    </div>
+                    <label>
+                        Route Condition:
+                        <textarea
+                            value={routeCondition}
+                            onChange={(e) => setRouteCondition(e.target.value)}
+                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
                         />
                     </label>
+                    <br />
+                    <label>
+                        Route City:
+                        <textarea
+                            value={routeCity}
+                            onChange={(e) => setRouteCity(e.target.value)}
+                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
+                        />
+                    </label>
+
                     <label>
                         Post Title:
                         <input
@@ -351,23 +400,6 @@ const MapboxDrawComponent = () => {
                         />
                     </label>
 
-                    <label style={{ marginTop: '10px' }}>
-                        Route Condition:
-                        <textarea
-                            value={postContent}
-                            onChange={(e) => setPostContent(e.target.value)}
-                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                        />
-                    </label>
-                    <label style={{ marginTop: '10px' }}>
-                        Route City:
-                        <textarea
-                            value={postContent}
-                            onChange={(e) => setPostContent(e.target.value)}
-                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                        />
-                    </label>
-                    <br />
                     <button onClick={saveRoute} style={{ marginTop: '10px' }}>
                         Save Route
                     </button>

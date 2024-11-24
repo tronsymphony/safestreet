@@ -19,10 +19,10 @@ export default async function handler(req, res) {
     try {
       // Insert the comment
       const query = `
-        INSERT INTO comments (page_id, post_id, page_type, author_id, author, content, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        INSERT INTO comments (page_id, page_type, author_id, author, content, created_at)
+        VALUES ($1, $2, $3, $4, $5, NOW())
         RETURNING *`;
-      const values = [page_id, post_id, page_type, author_id, author, content];
+      const values = [page_id, page_type, author_id, author, content];
 
       const result = await pool.query(query, values);
       res.status(201).json(result.rows[0]);

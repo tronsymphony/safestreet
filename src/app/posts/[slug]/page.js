@@ -89,6 +89,7 @@ export default function PostPage({ params }) {
       alert('Comment cannot be empty!');
       return;
     }
+    
     try {
       const res = await fetch('/api/addcomment', {
         method: 'POST',
