@@ -308,65 +308,71 @@ const MapboxDrawComponent = () => {
         });
     };
 
-    const parseCoordinates = (str) => {
-        console.log(str);
-        
-        const matches = str.match(/\[.*\]/);
-        if (matches && matches.length > 0) {
-            return JSON.parse(matches[0]);
-        }
-        return [];
-    };
-
-    const parseCoordinatesID = (str) => {
-        const firstNumber = str.routes.match(/\((\d+)/)[1];
-
-        if (firstNumber && firstNumber.length > 0) {
-            return JSON.parse(firstNumber);
-        }
-
-        return [];
-    };
-
+   
     return (
         <>
             <section className="main-map">
                 <div className="container">
                     <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
                 </div>
-            
 
                 {selectedRouteId && (
-                     <button onClick={deleteRoute}>
-                     Delete Route {selectedRouteId}
-                 </button>
+                    <button onClick={deleteRoute}>
+                        Delete Route {selectedRouteId}
+                    </button>
                 )}
 
-                    <div style={{ marginTop: '20px' }}>
-                        <label>
-                            Post Title:
-                            <input
-                                type="text"
-                                value={postTitle}
-                                onChange={(e) => setPostTitle(e.target.value)}
-                                style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
-                            />
-                        </label>
-                        <br />
-                        <label style={{ marginTop: '10px' }}>
-                            Post Content:
-                            <textarea
-                                value={postContent}
-                                onChange={(e) => setPostContent(e.target.value)}
-                                style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                            />
-                        </label>
-                        <br />
-                        <button onClick={saveRoute} style={{ marginTop: '10px' }}>
-                            Save Route
-                        </button>
-                       
-                    </div>
+                <div style={{ marginTop: '20px' }}>
+                    <label>
+                        Featured Image:
+                        <input
+                            type="text"
+                            value={postTitle}
+                            onChange={(e) => setPostTitle(e.target.value)}
+                            style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
+                        />
+                    </label>
+                    <label>
+                        Post Title:
+                        <input
+                            type="text"
+                            value={postTitle}
+                            onChange={(e) => setPostTitle(e.target.value)}
+                            style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
+                        />
+                    </label>
+                    <br />
+                    <label style={{ marginTop: '10px' }}>
+                        Route Description:
+                        <textarea
+                            value={postContent}
+                            onChange={(e) => setPostContent(e.target.value)}
+                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
+                        />
+                    </label>
+
+                    <label style={{ marginTop: '10px' }}>
+                        Route Condition:
+                        <textarea
+                            value={postContent}
+                            onChange={(e) => setPostContent(e.target.value)}
+                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
+                        />
+                    </label>
+                    <label style={{ marginTop: '10px' }}>
+                        Route City:
+                        <textarea
+                            value={postContent}
+                            onChange={(e) => setPostContent(e.target.value)}
+                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
+                        />
+                    </label>
+                    <br />
+                    <button onClick={saveRoute} style={{ marginTop: '10px' }}>
+                        Save Route
+                    </button>
+
+                </div>
             </section>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />

@@ -37,12 +37,9 @@ export default function ManagePage() {
         <div className="flex gap-2 justify-between max-w-xl mx-auto">
           {session?.role === "admin" && (
             <div className="mt-12">
-              <h3 className="text-2xl font-semibold mb-6 text-gray-700">
-                Admin Actions
-              </h3>
               <Link href="/map/edit">
                 <button className="bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-700 transition-shadow  hover:shadow-lg">
-                  Add Routes
+                  Create Route
                 </button>
               </Link>
             </div>
@@ -50,12 +47,10 @@ export default function ManagePage() {
 
           {session?.role === "admin" && (
             <div className="mt-12">
-              <h3 className="text-2xl font-semibold mb-6 text-gray-700">
-                Blog PostList
-              </h3>
+            
               <Link href="profile/posts/edit">
                 <button className="bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-700 transition-shadow  hover:shadow-lg">
-                  Add Post
+                  Create Blog Post
                 </button>
               </Link>
             </div>

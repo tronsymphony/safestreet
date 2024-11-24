@@ -307,7 +307,7 @@ const MapboxDrawComponent = () => {
           <div
             ref={mapContainerRef}
             className="rounded-md overflow-hidden"
-            style={{ width: "100%", height: "80vh" }}
+            style={{ width: "100%", height: "50vh" }}
           />
         </div>
       </section>

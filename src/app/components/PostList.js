@@ -40,14 +40,12 @@ export default function PostListPage() {
             <div className="p-6">
               <h2 className="text-2xl font-semibold mb-4">{post.title}</h2>
               <p className="text-gray-500 mb-4">Posted on: {new Date(post.created_at).toLocaleDateString()}</p>
-              <p className="text-gray-700 mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur a volutpat arcu.</p>
-              
               <div className="flex justify-between">
                 <Link href={`/posts/${post.slug}`} passHref className="text-white bg-slate-600 hover:bg-slate-700 px-4 py-2 rounded-lg transition">
-                    Read More
+                    View
                 </Link>
                 <Link href={`/posts/edit/${post.id}`} passHref className="text-slate-600 border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-lg transition">
-                    Edit Post
+                    Edit 
                 </Link>
               </div>
             </div>
