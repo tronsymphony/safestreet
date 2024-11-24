@@ -1,8 +1,8 @@
-'use client'
+'use client';
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, Card, CardContent, CardActions, Button, Grid } from '@mui/material';
 import Link from 'next/link';
 
+// Fetch posts from the API
 async function fetchPosts() {
   const res = await fetch('http://localhost:3000/api/posts');
 
@@ -31,39 +31,29 @@ export default function PostListPage() {
   }, []);
 
   return (
-    <Container maxWidth="md" style={{ padding: '2rem 0' }}>
-      <Typography variant="h3" component="h1" gutterBottom>
-        Blog Posts
-      </Typography>
-      <Grid container spacing={4}>
+    <div className="container mx-auto py-10 px-4">
+      <h1 className="text-4xl font-bold mb-8">Route Posts</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {posts.map((post) => (
-          <Grid item xs={12} key={post.id}>
-            <Card elevation={3} style={{ padding: '2rem', marginTop: '2rem' }}>
-              <CardContent>
-                <Typography variant="h4" component="h2" gutterBottom>
-                  {post.title}
-                </Typography>
-                <Typography variant="caption" display="block" gutterBottom>
-                  Posted on: {new Date(post.created_at).toLocaleDateString()}
-                </Typography>
-               
-              </CardContent>
-              <CardActions>
-                <Link href={`/posts/${post.slug}`} passHref>
-                  <Button variant="contained" color="primary">
+          <div key={post.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
+            <div className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">{post.title}</h2>
+              <p className="text-gray-500 mb-4">Posted on: {new Date(post.created_at).toLocaleDateString()}</p>
+              <p className="text-gray-700 mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur a volutpat arcu.</p>
+              
+              <div className="flex justify-between">
+                <Link href={`/posts/${post.slug}`} passHref className="text-white bg-slate-600 hover:bg-slate-700 px-4 py-2 rounded-lg transition">
                     Read More
-                  </Button>
                 </Link>
-                <Link href={`/posts/edit/${post.id}`} passHref>
-                  <Button variant="outlined" color="secondary">
+                <Link href={`/posts/edit/${post.id}`} passHref className="text-slate-600 border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-lg transition">
                     Edit Post
-                  </Button>
                 </Link>
-              </CardActions>
-            </Card>
-          </Grid>
+              </div>
+            </div>
+          </div>
         ))}
-      </Grid>
-    </Container>
+      </div>
+    </div>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
-import { SessionProvider, useSession, signIn, signOut } from "next-auth/react";
+import { SessionProvider, useSession, signOut } from "next-auth/react";
 import "./globals.scss";
 import Link from 'next/link';
-import styles from "./page.module.scss";
 import { useRouter } from 'next/navigation';
+import styles from "./page.module.scss";
 
 export default function RootLayout({ children }) {
   return (
@@ -16,6 +16,7 @@ export default function RootLayout({ children }) {
 
 function RootContent({ children }) {
   const { data: session, status } = useSession();  // Get session data
+  const router = useRouter();
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });  // Use NextAuth's signOut
@@ -28,49 +29,59 @@ function RootContent({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Safe Streets Map</title>
       </head>
-      <body>
-        <header className="main-header px-2 py-6">
-          <div className="max-w-6xl mx-auto flex justify-between">
-            <div className={styles.logo}>
-              <Link href="/">
+      <body className=" text-gray-800">
+        
+        <header className="bg-white mb-2">
+          <div className="max-w-6xl mx-auto px-4 py-6 flex justify-between items-center ox">
+            <div className={styles.logo + " flex items-center font-bold text-xl"}>
+              <Link href="/" className="hover:text-sky-700 text-sm transition">
                 Safe Streets Map
               </Link>
             </div>
-            <nav className="nav">
-              <ul className="flex gap-4">
-                <li><Link href="/about">About</Link></li>
-                <li><Link href="/map">Map</Link></li>
-                {status === "authenticated" ? (
-                  // Show these links if the user is authenticated
-                  <>
-                    <li><Link href="/profile">Profile</Link></li>
-                    <li>
-                      <button onClick={handleLogout}>
-                        Logout
-                      </button>
-                    </li>
-                  </>
-                ) : (
-                  // Show login and signup links if the user is not authenticated
-                  <>
-                    <li><Link href="/login">Login</Link></li>
-                    <li><Link href="/signup">Sign up</Link></li>
-                  </>
-                )}
-              </ul>
+            <nav className="flex gap-6 text-lg items-center">
+              <Link href="/about" className="hover:text-sky-700 text-sm transition">About</Link>
+              <Link href="/blog" className="hover:text-sky-700 text-sm transition">Blog</Link>
+              <Link href="/map" className="hover:text-sky-700 text-sm transition">Map</Link>
+              {status === "authenticated" ? (
+                <>
+                  <Link href="/profile" className="hover:text-sky-700 text-sm transition">Profile</Link>
+                  <button
+                    onClick={handleLogout}
+                    className="hover:bg-sky-700 hover:text-white py-2 text-sm text-sky-700 rounded transition"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="hover:text-sky-700 text-sm transition">Login</Link>
+                  <Link href="/signup" className="hover:bg-sky-700 hover:text-white  py-2 text-sm text-sky-700 rounded transition">
+                    Sign up
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         </header>
-        <div className="content">
+
+        {/* Main Content */}
+        <main className="">
           {children}
-        </div>
-        <footer className="main-footer">
-          <div className="container">
-            <div className={styles.logo}>
-              <Link href="/">Safe Streets Map</Link>
-              <Link href="/">Terms of Service. Privacy Policy.</Link>
+        </main>
+
+        {/* Footer */}
+        <footer className="bg-slate-800 py-8 text-white">
+          <div className="max-w-6xl mx-auto flex justify-between items-center px-4">
+            <div className="text-lg font-bold">
+              <Link href="/" className="hover:text-sky-700 text-sm transition">
+                Safe Streets Map
+              </Link>
             </div>
-            <p>&copy; {new Date().getFullYear()} Safe Streets Map</p>
+            <div>
+              <Link href="/" className="hover:text-sky-700 text-sm transition">Terms of Service</Link> |{" "}
+              <Link href="/" className="hover:text-sky-700 text-sm transition">Privacy Policy</Link>
+            </div>
+            <p className="text-sm text-white-500">&copy; {new Date().getFullYear()} Safe Streets Map</p>
           </div>
         </footer>
       </body>

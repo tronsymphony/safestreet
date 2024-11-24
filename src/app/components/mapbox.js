@@ -302,11 +302,11 @@ const MapboxDrawComponent = () => {
 
   return (
     <>
-      <section className="my-6 mb-32">
-        <div className="max-w-5xl mx-auto">
+      <section className="m-0  bg-slate-100">
+        <div className="mx-auto">
           <div
             ref={mapContainerRef}
-            className="rounded-3xl overflow-hidden"
+            className="rounded-md overflow-hidden"
             style={{ width: "100%", height: "80vh" }}
           />
         </div>

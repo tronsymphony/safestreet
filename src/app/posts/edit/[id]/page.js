@@ -1,122 +1,146 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Container, Typography, Button, CircularProgress, Box } from '@mui/material';
-import Editor from '../../../components/PostEditor'; 
 
-export default function EditPostPage({ params }) {
-  const { id } = params;  // Accessing the dynamic segment directly from params
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);  // For handling loading state
+import React, { useState, useEffect } from 'react';
+import MapboxDrawComponent from "../../../components/map-single-view";
+import { getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+// Fetch post by id
+async function fetchPostById(id) {
+  const res = await fetch(`/api/getpostbyid?id=${id}`);
+  if (!res.ok) {
+    throw new Error('Failed to fetch post');
+  }
+  return res.json();
+}
+
+// Fetch comments for the post
+async function fetchComments(postId) {
+  const res = await fetch(`/api/comments/${postId}`);
+  if (!res.ok) {
+    throw new Error('Failed to fetch comments');
+  }
+  return res.json().comments;
+}
+
+// Submit a new comment
+async function submitComment(postId, author, content, author_id) {
+  const res = await fetch(`/api/comments/${postId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ author, content, author_id }),
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to submit comment');
+  }
+
+  return res.json();
+}
+
+// Delete post
+async function deletePostById(id) {
+  const res = await fetch(`/api/deleteroute?id=${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to delete post');
+  }
+
+  return res.json();
+}
+
+export default function PostPage({ params }) {
+  const { id } = params; // Use id from params
+  const [post, setPost] = useState(null); // State to store the post data
+  const [error, setError] = useState(null); // State to manage errors
+  const [comments, setComments] = useState([]); // State to store comments
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true); // Loading state for initial data fetch
+  const router = useRouter();
+
+  useEffect(() => {
+    getSession().then((session) => {
+      if (!session) {
+        router.push("/auth/signin");
+      } else {
+        setSession(session);
+        setLoading(false); // Loading finished once session is retrieved
+      }
+    });
+  }, [router]);
 
   useEffect(() => {
     const getPost = async () => {
       try {
-        const post = await fetchPost(id);
-        const blocks = JSON.parse(post.content);
-        const postData = {
-          time: new Date(post.updated_at).getTime(),
-          blocks: [
-            {
-              type: 'header',
-              data: {
-                text: post.title,
-                level: 1,
-              },
-            },
-            ...blocks,
-          ],
-        };
-        setData(postData);
-      } catch (error) {
-        console.error('Error fetching post:', error);
-      } finally {
-        setLoading(false);  // Set loading to false once data is fetched
+        const fetchedPost = await fetchPostById(id); // Fetch post by id
+        setPost(fetchedPost); // Set post data in the state
+        const fetchedComments = await fetchComments(fetchedPost.id); // Fetch comments for the post
+        setComments(fetchedComments); // Set comments in the state
+      } catch (err) {
+        setError('Failed to fetch post');
+        console.error('Error fetching post:', err);
       }
     };
 
-    if (id) {
-      getPost();
+    getPost(); // Call the function to fetch the post data
+  }, [id]); // Ensure this effect runs when `id` changes
+
+  const handleDelete = async (id) => {
+    if (!window.confirm(`Are you sure you want to delete the post "${post.title}"? This action cannot be undone.`)) {
+      return;
     }
-  }, [id]);
-
-  const handleSave = async (postData) => {
+  
     try {
-      const titleBlock = postData.blocks.find(block => block.type === 'header');
-      const contentBlocks = postData.blocks.filter(block => block.type !== 'header');
-
-      const postContent = {
-        title: titleBlock ? titleBlock.data.text : 'Untitled',
-        content: JSON.stringify(contentBlocks),
-        updated_at: new Date().toISOString(),
-      };
-
-      const response = await fetch(`/api/updatepost?id=${id}`, { // Ensure correct query string
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postContent),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Post updated successfully!', data);
-
-      // Redirect or display a success message
-      alert('Post updated successfully!');
-      // window.location.href = '/some-other-page'; // Redirect if necessary
-    } catch (error) {
-      console.error('Error updating post:', error);
-      alert('Failed to update post.');
+      setLoading(true); // Show loader during deletion
+      await deletePostById(id); // Delete the post
+      alert('Post deleted successfully!');
+      router.push('/profile'); // Redirect to the post listing page
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      alert('Failed to delete the post. Please try again.');
+    } finally {
+      setLoading(false); // Hide loader after completion
     }
   };
 
-  if (loading) {
+  if (error) {
     return (
-      <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
-        <CircularProgress />
-        <Typography variant="h6" mt={2}>Loading...</Typography>
-      </Container>
+      <div className="container mx-auto p-6 mt-10 bg-white shadow-md rounded-lg">
+        <h1 className="text-3xl font-bold mb-4">Error</h1>
+        <p>Could not fetch the post. Please try again later.</p>
+      </div>
     );
   }
 
-  if (!data) {
+  if (!post || loading) {
     return (
-      <Container maxWidth="md" sx={{ textAlign: 'center', mt: 4 }}>
-        <Typography variant="h6">No post data found.</Typography>
-      </Container>
+      <div className="container mx-auto p-6 mt-10 bg-white shadow-md rounded-lg">
+        <h1 className="text-3xl font-bold mb-4">Loading...</h1>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ my: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Edit Post
-      </Typography>
-      <Editor data={data} onChange={setData} editorblock="editorjs-container" />
-      <Box sx={{ textAlign: 'right', mt: 2 }}>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={() => handleSave(data)}
+    <div className="container mx-auto p-6 mt-10 bg-white shadow-md rounded-lg">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+        <p className="text-gray-600">Posted on: {new Date(post.created_at).toLocaleDateString()}</p>
+        <div className="mt-4" dangerouslySetInnerHTML={{ __html: post.content }} />
+        {/* Mapbox component to show the route */}
+        <MapboxDrawComponent post={post} />
+      </div>
+
+      {/* Delete Button */}
+      <div className="mt-10 text-right">
+        <button
+          onClick={()=>handleDelete(post.id)}
+          className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition"
         >
-          Save Changes
-        </Button>
-      </Box>
-    </Container>
+          Delete Route
+        </button>
+      </div>
+    </div>
   );
-}
-
-async function fetchPost(id) {
-  const res = await fetch(`/api/getpostbyid?id=${id}`);
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch post');
-  }
-
-  const post = await res.json();
-  return post;
 }

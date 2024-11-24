@@ -1,21 +1,25 @@
-// pages/api/posts.js
-import { Client } from 'pg';
+import { nanoid } from 'nanoid';
 import pool from '../../lib/db';
-// import cors, { runMiddleware } from '../../lib/corsMiddleware';
 
 export default async function handler(req, res) {
-  // await runMiddleware(req, res, cors);
-
   if (req.method === 'POST') {
     const { title, content } = req.body;
 
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Title and content are required.' });
+    }
+
+    // Generate a slug from the title and append a unique ID for uniqueness
+    const slug = `${title.toLowerCase().replace(/\s+/g, '-')}-${nanoid(6)}`;
+
     try {
       const result = await pool.query(
-        'INSERT INTO posts (title, content, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) RETURNING *',
-        [title, content]
+        'INSERT INTO posts (title, slug, content, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *',
+        [title, slug, content]
       );
       res.status(200).json(result.rows[0]);
     } catch (error) {
+      console.error('Error creating post:', error);
       res.status(500).json({ error: 'Failed to create post' });
     }
   } else {

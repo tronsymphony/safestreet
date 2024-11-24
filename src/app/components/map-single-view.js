@@ -9,7 +9,7 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
-const MapboxDrawComponent = ({ routeId }) => {
+const MapboxDrawComponent = ({ post }) => {
     const mapContainerRef = useRef(null);
     const drawRef = useRef(null); // Use useRef to store draw control
     const [routesData, setRoutesData] = useState([]);
@@ -20,16 +20,17 @@ const MapboxDrawComponent = ({ routeId }) => {
         lat: 33.979215019959895,
         lng: -118.46648985815806
     }); // Default location
-    const [drawnRoute, setDrawnRoute] = useState(null); 
+    const [drawnRoute, setDrawnRoute] = useState(null);
     const mapInstance = useRef(null); // To store map instance without triggering re-renders
     const directionsClient = useMemo(
         () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
         []
     );
+    const { route_id } = post;
 
-    const fetchData = async () => {
+    const fetchData = async (route_id) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/getroute?id=${routeId}`);
+            const response = await fetch(`http://localhost:3000/api/getroute?id=${route_id}`);
             const data = await response.json();
             setRoutesData(data);
         } catch (error) {
@@ -51,7 +52,7 @@ const MapboxDrawComponent = ({ routeId }) => {
     }, []);
 
     useEffect(() => {
-        fetchData();
+        fetchData(route_id);
     }, []);
 
     useEffect(() => {
@@ -178,7 +179,7 @@ const MapboxDrawComponent = ({ routeId }) => {
                         type: 'geojson',
                         data: {
                             type: 'Feature',
-                            properties: { id: routeID},
+                            properties: { id: routeID },
                             geometry: route,
                         }
                     });
@@ -230,12 +231,12 @@ const MapboxDrawComponent = ({ routeId }) => {
 
     return (
         <>
-            <section className="main-map">
-                <div className="container">
+            <section className="">
+                <div className="">
                     <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
                 </div>
             </section>
-            
+
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
         </>
     );

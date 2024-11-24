@@ -1,23 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-
-
-// Hash the password using bcrypt
-const plainPassword = "password123";
-const saltRounds = 12; // Should match the number of rounds used for the hashed password
-const hashedPassword = bcrypt.hashSync(plainPassword, saltRounds);
-
-console.log("Hashed password:", hashedPassword);
-
-
-const users = [
-    {
-        id: 1,
-        email: "test@example.com",
-        password: hashedPassword, // hashed password: 'password123'
-    },
-];
+import pool from '../../../lib/db'; // Your existing database connection
 
 export default NextAuth({
     providers: [
@@ -28,47 +12,56 @@ export default NextAuth({
                 password: { label: "Password", type: "password", placeholder: "Password" },
             },
             async authorize(credentials) {
-                // Log credentials received to check
-                console.log("Received credentials:", credentials);
+                const { email, password } = credentials;
 
-                // Find user based on email
-                const user = users.find((u) => u.email === credentials.email);
-                if (!user) {
-                    console.log("User not found");
-                    return null; // User not found
+                try {
+                    // Check if the user exists in the database
+                    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+                    if (userResult.rows.length === 0) {
+                        console.log("User not found");
+                        return null; // Return null if the user doesn't exist
+                    }
+
+                    const user = userResult.rows[0];
+
+                    // Check if the password is correct using bcrypt.compare
+                    const isMatch = await bcrypt.compare(password, user.password);
+
+                    if (!isMatch) {
+                        console.log("Invalid password");
+                        return null; // Return null if the password is incorrect
+                    }
+
+                    // Return user object (will be stored in JWT token)
+                    return { id: user.id, email: user.email, role: user.role };
+                } catch (error) {
+                    console.error("Error during user authentication:", error);
+                    return null; // Return null in case of error
                 }
-
-                // Check password
-                const isValid = bcrypt.compareSync(credentials.password, user.password);
-                if (!isValid) {
-                    console.log("Invalid password", credentials.password, user.password, isValid);
-                    return null; // Invalid password
-                }
-
-                // Return user if email and password are valid
-                console.log("Authentication successful");
-                return { id: user.id, email: user.email };
             },
         }),
     ],
     pages: {
-        signIn: "/login",  // Custom login page (explained below)
+        signIn: "/login",  // Custom login page
     },
     session: {
         strategy: "jwt", // Use JWT for sessions stored in cookies
     },
     jwt: {
-        secret: process.env.JWT_SECRET,  // Secret for signing JWT tokens
+        secret: process.env.JWT_SECRET,  // Ensure this is set in your environment variables
     },
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
+                token.role = user.role; // Include role in the JWT payload
             }
             return token;
         },
         async session({ session, token }) {
             session.id = token.id;
+            session.role = token.role; // Pass role to the session object
             return session;
         },
     },
