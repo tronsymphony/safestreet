@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import MapboxDrawComponent from "../../components/map-single-view";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
+import Image from 'next/image';
 async function fetchPost(slug) {
   const res = await fetch(`/api/getpostbyslug?slug=${slug}`);
   if (!res.ok) {
@@ -25,8 +25,8 @@ async function toggleLike(routeId, isLiked) {
   return res.json();
 }
 
-async function fetchComments(pageId) {
-  const res = await fetch(`/api/fetchcomment?page_id=${pageId}&page_type=post`);
+async function fetchComments(postId) {
+  const res = await fetch(`/api/fetchcomment?page_id=${postId}&page_type=post`);
   if (!res.ok) {
     console.error('Failed to fetch comments');
     return [];
@@ -44,35 +44,34 @@ export default function PostPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [session, setSession] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
     const init = async () => {
-      const userSession = await getSession();
-      if (!userSession) {
-        router.push("/auth/signin");
-      } else {
-        setSession(userSession);
-        try {
-          const fetchedPost = await fetchPost(slug);
-          setPost(fetchedPost);
-          setLikeCount(fetchedPost.like_count || 0);
-          console.log(fetchedPost);
-          
-          const fetchedComments = await fetchComments(fetchedPost.post_id);
-          setComments(fetchedComments || []);
-        } catch (err) {
-          console.error(err);
-          setError('Failed to load the post.');
-        } finally {
-          setLoading(false);
-        }
+      const userSession = await getSession(); // Check if user is logged in
+      setSession(userSession || null); // Allow null session for non-logged-in users
+      try {
+        const fetchedPost = await fetchPost(slug);
+        console.log(fetchedPost);
+        
+        setPost(fetchedPost);
+        setLikeCount(fetchedPost.like_count || 0);
+        const fetchedComments = await fetchComments(fetchedPost.post_id);
+        setComments(fetchedComments || []);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load the post.');
+      } finally {
+        setLoading(false);
       }
     };
     init();
-  }, [router, slug]);
+  }, [slug]);
 
   const handleLikeToggle = async () => {
+    if (!session) {
+      alert('You must be logged in to like this post.');
+      return;
+    }
     if (!post?.route_id) return;
     try {
       const updatedData = await toggleLike(post.route_id, isLiked);
@@ -85,11 +84,16 @@ export default function PostPage({ params }) {
   };
 
   const handleCommentSubmit = async () => {
+    if (!session) {
+      alert('You must be logged in to submit a comment.');
+      return;
+    }
+
     if (!newComment.trim()) {
       alert('Comment cannot be empty!');
       return;
     }
-    
+
     try {
       const res = await fetch('/api/addcomment', {
         method: 'POST',
@@ -116,6 +120,8 @@ export default function PostPage({ params }) {
     }
   };
 
+ 
+
   if (error) {
     return <div className="text-center mt-10">{error}</div>;
   }
@@ -123,14 +129,21 @@ export default function PostPage({ params }) {
   if (loading) {
     return <div className="text-center mt-10">Loading...</div>;
   }
-
+ 
   
-  
-
   return (
     <div className="container mx-auto p-6 mt-10 bg-white shadow-md rounded-lg">
       <div className="mb-8">
+        <Image
+        src={post.featured_image}
+        alt={'featured image'}
+        width={200}
+        height={200}
+        ></Image>
+
         <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+        <div>{post.route_city}</div>
+        <div>{post.route_condition}</div>
         <p className="text-gray-600">Posted on: {new Date(post.created_at).toLocaleDateString()}</p>
         <div className="mt-4" dangerouslySetInnerHTML={{ __html: post.content }} />
         <div className="my-4">
@@ -159,21 +172,23 @@ export default function PostPage({ params }) {
         )}
       </div>
 
-      <div className="mt-8">
-        <h3 className="text-xl font-semibold mb-2">Add a Comment</h3>
-        <textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          rows="4"
-          className="w-full p-2 border rounded"
-        />
-        <button
-          onClick={handleCommentSubmit}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Submit
-        </button>
-      </div>
+      {session && (
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-2">Add a Comment</h3>
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            rows="4"
+            className="w-full p-2 border rounded"
+          />
+          <button
+            onClick={handleCommentSubmit}
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Submit
+          </button>
+        </div>
+      )}
     </div>
   );
 }

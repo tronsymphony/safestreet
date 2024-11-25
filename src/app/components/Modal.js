@@ -22,8 +22,8 @@ const Modal = ({ isOpen, onClose, content }) => {
                 width: '75vw',
                 position:'relative'
             }}>
-                <button onClick={onClose} className='absolute top-4 right-4'><XMarkIcon className='size-6'></XMarkIcon></button>
-                <div>{content}</div>
+                <button onClick={onClose} className='absolute top-4 right-4 bg-white hover:bg-yellow-400 z-20'><XMarkIcon className='size-6'></XMarkIcon></button>
+                <div className='relative z-10'>{content}</div>
             </div>
         </div>
     );

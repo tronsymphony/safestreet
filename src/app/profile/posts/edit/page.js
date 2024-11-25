@@ -43,7 +43,8 @@ export default function CreateRegularPost() {
         if (featuredImage) {
             const formData = new FormData();
             formData.append('file', featuredImage);
-
+            console.log(formData);
+            
             const uploadRes = await fetch('/api/uploadImage', {
                 method: 'POST',
                 body: formData,

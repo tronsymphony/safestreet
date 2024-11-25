@@ -18,6 +18,7 @@ const MapboxDrawComponent = () => {
     const [selectedRouteId, setSelectedRouteId] = useState(null);
     const [postTitle, setPostTitle] = useState(''); // State to manage post title
     const [postContent, setPostContent] = useState('');
+    const [previewUrl, setPreviewUrl] = useState(null);
     const [userLocation, setUserLocation] = useState({
         lat: 33.979215019959895,
         lng: -118.46648985815806
@@ -28,7 +29,7 @@ const MapboxDrawComponent = () => {
         () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
         []
     );
-    const [featuredImage, setFeaturedImage] = useState('');
+    const [featuredImageState, setFeaturedImageState] = useState('');
     const [routeCondition, setRouteCondition] = useState('');
     const [routeCity, setRouteCity] = useState('');
 
@@ -43,8 +44,17 @@ const MapboxDrawComponent = () => {
     };
 
     // Handle featured image file upload
-    const handleFeaturedImageChange = (e) => {
-        setFeaturedImage(e.target.files[0]);
+    const handleFeaturedImageStateChange = (e) => {
+        const file = e.target.files[0];
+        console.log(e.target.files[0]);
+
+        if (file) {
+            setFeaturedImageState(file);
+        
+            // Create a temporary preview URL for the image
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url);
+          }
     };
 
     useEffect(() => {
@@ -205,21 +215,27 @@ const MapboxDrawComponent = () => {
             return;
         }
 
-        let imageUrl = '';
+        let featuredImage = '';
 
-        if (featuredImage) {
+        if (featuredImageState) {
             const formData = new FormData();
-            formData.append('file', featuredImage);
+            formData.append('file', featuredImageState);
 
-            const uploadRes = await fetch('/api/uploadImage', {
+            const uploadRes = await fetch('/api/uploadimgeroute', {
                 method: 'POST',
                 body: formData,
             });
 
-            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok) {
+                console.error('Failed to upload image:', await uploadRes.text());
+                alert('Failed to upload the image.');
+                return;
+            }
 
-            if (uploadRes.ok) {
-                imageUrl = uploadData.filePath;
+            const uploadData = await uploadRes.json();
+            
+            if (uploadRes) {
+                featuredImage = uploadData.filePath;
             } else {
                 return;
             }
@@ -235,7 +251,7 @@ const MapboxDrawComponent = () => {
                     route: drawnRoute,
                     postTitle,
                     postContent,
-                    imageUrl,
+                    featuredImage,
                     routeCondition,
                     routeCity,
                 }),
@@ -355,11 +371,12 @@ const MapboxDrawComponent = () => {
 
                 <div style={{ marginTop: '20px' }}>
                     <div>
+                        {previewUrl && <img className='size-10' src={previewUrl} alt="Preview" />}
                         <label className="block text-gray-700 font-medium mb-2">Featured Image</label>
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={handleFeaturedImageChange}
+                            onChange={handleFeaturedImageStateChange}
                             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
                         />
                     </div>

@@ -174,13 +174,12 @@ const MapboxDrawComponent = () => {
     postRouteLike(routeId);
   };
 
-  console.log(token);
-
   const loadMultipleRoutes = () => {
     routesData.routes?.forEach((route, index) => {
       const coordinates = route.route;
       const routeSlug = route.slug;
       const routeTitle = route.title;
+      const featured_image = route.featured_image;
       const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
 
       directionsClient
@@ -216,15 +215,17 @@ const MapboxDrawComponent = () => {
             },
           });
 
+          console.log(featured_image);
+
           map.on("click", routeId, (e) => {
             const content = (
-              <div className="grid grid-cols-2">
+              <div className="flex- flex-col">
                 <figure className="flex w-full">
                   <Image
-                    width="200"
+                    width={200}
                     height={300}
-                    className="object-cover w-full"
-                    src="https://images.pexels.com/photos/3006223/pexels-photo-3006223.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                    className="object-cover h-auto w-full max-h-52"
+                    src={featured_image? featured_image :  "https://images.pexels.com/photos/3006223/pexels-photo-3006223.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"}
                     alt={routeTitle}
                   />
                 </figure>
@@ -307,7 +308,7 @@ const MapboxDrawComponent = () => {
           <div
             ref={mapContainerRef}
             className="rounded-md overflow-hidden"
-            style={{ width: "100%", height: "50vh" }}
+            style={{ width: "100%", height: "60vh" }}
           />
         </div>
       </section>

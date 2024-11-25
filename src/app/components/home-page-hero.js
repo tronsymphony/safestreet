@@ -9,7 +9,7 @@ export default function HomePageHero() {
     return (
         <>
             {/* Hero Section */}
-            <section className={`relative rounded-md overflow-hidden`}>
+            <section className={`relative overflow-hidden`}>
                 <Image
                     width="1600"
                     height="900"
@@ -70,9 +70,9 @@ export default function HomePageHero() {
             </section>
 
             {/* Local Routes Section */}
-            <section className=" py-16 bg-slate-100">
+            <section className=" py-4 mb-4">
                 <div className="max-w-5xl mx-auto text-center">
-                    <h2 className="text-3xl font-bold capitalize mb-6">Local routes near Los Angeles</h2>
+                    <h2 className="text-3xl font-bold capitalize mb-2">Local routes near Los Angeles</h2>
                     <p className="text-gray-600">Discover the best bike routes near Los Angeles with safety and fun in mind.</p>
                 </div>
             </section>
