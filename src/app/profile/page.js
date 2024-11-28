@@ -5,6 +5,7 @@ import PostListPage from "../components/PostList";
 import ProfileBlogLoop from "../components/ProfileBlogLoop";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import LocationListPage from "../components/LocationsList";
 
 export default function ManagePage() {
   const [session, setSession] = useState(null);
@@ -47,7 +48,7 @@ export default function ManagePage() {
 
           {session?.role === "admin" && (
             <div className="mt-12">
-            
+
               <Link href="profile/posts/edit">
                 <button className="bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-700 transition-shadow  hover:shadow-lg">
                   Create Blog Post
@@ -55,6 +56,20 @@ export default function ManagePage() {
               </Link>
             </div>
           )}
+
+          {session?.role === "admin" && (
+            <div className="mt-12">
+              <Link href="/locations/edit">
+                <button className="bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-700 transition-shadow  hover:shadow-lg">
+                  Create Location Post
+                </button>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-12">
+          <LocationListPage />
         </div>
 
         <div className="mt-12">

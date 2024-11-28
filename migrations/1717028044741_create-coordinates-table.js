@@ -3,7 +3,6 @@
  */
 exports.shorthands = undefined;
 
-
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @returns {Promise<void> | void}
