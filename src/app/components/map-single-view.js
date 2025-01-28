@@ -199,15 +199,15 @@ const MapboxDrawComponent = ({ post }) => {
                         }
                     });
 
-                    mapInstance.current.on('click', routeId, (e) => {
-                        const content = (
-                            <div>
-                                <h3>Route {index + 1}</h3>
-                            </div>
-                        );
-                        setModalContent(content);
-                        setIsModalOpen(true);
-                    });
+                    // mapInstance.current.on('click', routeId, (e) => {
+                    //     const content = (
+                    //         <div>
+                    //             <h3>Route {index + 1}</h3>
+                    //         </div>
+                    //     );
+                    //     setModalContent(content);
+                    //     setIsModalOpen(true);
+                    // });
 
                     mapInstance.current.on('click', routeId, (e) => {
                         // const routeId = e.features[0].properties.id;
@@ -233,7 +233,7 @@ const MapboxDrawComponent = ({ post }) => {
         <>
             <section className="">
                 <div className="">
-                    <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
+                    <div ref={mapContainerRef} style={{ width: '100%', height: '400px' }} />
                 </div>
             </section>
 

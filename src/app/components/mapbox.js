@@ -14,38 +14,63 @@ import {
   MapIcon,
 } from "@heroicons/react/24/solid";
 
+
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
-const MapboxDrawComponent = () => {
+async function toggleLike(routeId, isLiked, userId) {
+  const res = await fetch(`/api/toggleLike`, {
+    method: isLiked ? "DELETE" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ route_id: routeId, user_id: userId }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to toggle like");
+  }
+  return res.json();
+}
+
+const MapboxDrawComponent = ({ session }) => {
   const token = cookies.get("token");
   const router = useRouter();
   const mapContainerRef = useRef(null);
   const [map, setMap] = useState(null);
   const [draw, setDraw] = useState(null);
   const [routesData, setRoutesData] = useState([]);
+  const [locationsData, setLocationsData] = useState([]);
   const [modalContent, setModalContent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
-  const [userLocation, setUserLocation] = useState({
-    lat: 33.979215019959895,
-    lng: -118.46648985815806,
-  });
+  const [userLocation, setUserLocation] = useState();
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
 
   const directionsClient = useMemo(
     () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
     []
   );
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/api/getroutes");
-      const data = await response.json();
-      setRoutesData(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  useEffect(() => {
+    // Fetch routes and locations
+    const fetchData = async () => {
+      try {
+        const [routesRes, locationsRes] = await Promise.all([
+          fetch("http://localhost:3000/api/getroutes"),
+          fetch("http://localhost:3000/api/locations"),
+        ]);
+
+        const routes = await routesRes.json();
+        const locations = await locationsRes.json();
+
+        setRoutesData(routes);
+        setLocationsData(locations);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const postRouteLike = async (routeId) => {
     try {
@@ -88,14 +113,16 @@ const MapboxDrawComponent = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (map) {
+      if (routesData.routes?.length > 0) {
+        loadMultipleRoutes();
+      }
 
-  useEffect(() => {
-    if (map && routesData.routes && routesData.routes.length > 0) {
-      loadMultipleRoutes();
+      if (locationsData.length > 0) {
+        loadLocations();
+      }
     }
-  }, [map, routesData]);
+  }, [map, routesData, locationsData]);
 
   useEffect(() => {
     if (map && userLocation) {
@@ -113,6 +140,41 @@ const MapboxDrawComponent = () => {
           zoom: 13,
         });
 
+
+
+        // Create a marker and add it to the map
+        const userMarker = new mapboxgl.Marker()
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .setPopup(
+          new mapboxgl.Popup().setHTML(`
+            <div class="bg-white p-4 max-w-xs">
+              <h3 class="text-lg font-semibold text-gray-800 mb-2">Your Location</h3>
+              <p class="text-sm text-gray-600 mb-4">
+                Latitude: ${userLocation.lat.toFixed(4)}<br>
+                Longitude: ${userLocation.lng.toFixed(4)}
+              </p>
+              <button
+                id="zoom-to-location"
+                class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Zoom In
+              </button>
+            </div>
+          `)
+        )
+        .addTo(map);
+      
+      // Add event listener to the button
+      userMarker.getPopup()
+      .on('open', () => {
+        document.getElementById('zoom-to-location').addEventListener('click', () => {
+          map.flyTo({
+            center: [userLocation.lng, userLocation.lat],
+            zoom: 15,
+          });
+        });
+      });
+
         const draw = new MapboxDraw({
           displayControlsDefault: false,
           controls: {
@@ -123,10 +185,6 @@ const MapboxDrawComponent = () => {
           },
           defaultMode: "draw_line_string",
         });
-
-        // map.on('draw.create', updateRoute);
-        // map.on('draw.update', updateRoute);
-        // map.on('draw.delete', clearRoute);
 
         map.on("load", () => {
           map.addSource("route", {
@@ -157,6 +215,22 @@ const MapboxDrawComponent = () => {
           });
         });
 
+        map.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+        map.addControl(
+          new mapboxgl.GeolocateControl({
+            positionOptions: {
+              enableHighAccuracy: true,
+            },
+            trackUserLocation: true,
+            showUserLocation: true,
+          }),
+          "top-right"
+        );
+
+        map.addControl(new mapboxgl.FullscreenControl(), "top-right");
+        map.addControl(new mapboxgl.ScaleControl(), "bottom-left");
+
         setMap(map);
         setDraw(draw);
       };
@@ -170,8 +244,87 @@ const MapboxDrawComponent = () => {
     setIsModalOpen(false); // Close the modal after navigation
   };
 
-  const handleRouteLike = (routeId) => {
-    postRouteLike(routeId);
+  const handleViewLocoation = (routeId) => {
+    router.push(`/locations/${routeId}`); // Navigate to /posts/[routeId]
+    setIsModalOpen(false); // Close the modal after navigation
+  };
+
+  const handleLikeToggle = async (index) => {
+    if (!session) {
+      alert("You must be logged in to like this post.");
+      return;
+    }
+
+    try {
+      const updatedData = await toggleLike(index, isLiked, session.id);
+      setLikeCount(updatedData.like_count);
+      setIsLiked(!isLiked);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to toggle like.");
+    }
+  };
+
+  const loadLocations = () => {
+    locationsData.forEach((location) => {
+      const { coordinates, title, description, image_url, slug } = location;
+
+      const marker = new mapboxgl.Marker()
+        .setLngLat(coordinates)
+        .addTo(map);
+
+      marker.getElement().addEventListener("click", () => {
+        setModalContent(
+          <div className="flex- flex-col">
+            <figure className="flex w-full">
+              <Image
+                width={200}
+                height={300}
+                className="object-cover h-auto w-full max-h-52"
+                src={
+                  image_url
+                    ? image_url
+                    : "https://images.pexels.com/photos/3006223/pexels-photo-3006223.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                }
+                alt={title}
+              />
+            </figure>
+            <div className="p-4 flex flex-col items-start justify-center">
+              <h2 className="text-2xl mb-4">{title}</h2>
+              <div className="mb-4">{description}</div>
+              <div className="flex gap-2">
+                <button
+                  className="text-sm px-4 py-2 bg-green-500 text-white rounded-full hover:bg-gray-800"
+                  onClick={() => handleViewLocoation(slug)}
+                >
+                  View Location
+                </button>
+                <button
+                  className="text-sm px-4 py-2 bg-green-500 text-white rounded-full hover:bg-gray-800"
+                  onClick={() => handleViewLocoation(slug)}
+                >
+                  <ChatBubbleLeftIcon className="size-4"></ChatBubbleLeftIcon>
+                </button>
+                <button
+                  className="text-sm px-4 py-2 bg-green-500 text-white rounded-full hover:bg-gray-800"
+                  onClick={() => handleLikeToggle(routeId)}
+                  disabled={hasLiked}
+                >
+                  <HandThumbUpIcon className="size-4"></HandThumbUpIcon>
+                </button>
+                <button
+                  className="text-sm px-4 py-2 bg-green-500 text-white rounded-full hover:bg-gray-800"
+                  onClick={() => handleViewLocoation(slug)}
+                >
+                  <ShareIcon className="size-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+        setIsModalOpen(true);
+      });
+    });
   };
 
   const loadMultipleRoutes = () => {
@@ -179,7 +332,7 @@ const MapboxDrawComponent = () => {
       const coordinates = route.route;
       const routeSlug = route.slug;
       const routeTitle = route.title;
-      const featured_image = route.featured_image;
+      const featured_image = route?.featured_image;
       const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
 
       directionsClient
@@ -193,7 +346,7 @@ const MapboxDrawComponent = () => {
           const route = response.body.routes[0].geometry;
           const distance = response.body.routes[0].distance;
           const routeId = `route-${index}`;
-          const routeLegs = response.body.routes[0].legs;
+          const routeName = response.body.routes[0].legs[0].summary;
 
           map.addSource(routeId, {
             type: "geojson",
@@ -215,8 +368,6 @@ const MapboxDrawComponent = () => {
             },
           });
 
-          console.log(featured_image);
-
           map.on("click", routeId, (e) => {
             const content = (
               <div className="flex- flex-col">
@@ -225,33 +376,31 @@ const MapboxDrawComponent = () => {
                     width={200}
                     height={300}
                     className="object-cover h-auto w-full max-h-52"
-                    src={featured_image? featured_image :  "https://images.pexels.com/photos/3006223/pexels-photo-3006223.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"}
+                    src={
+                      featured_image
+                        ? featured_image
+                        : "https://images.pexels.com/photos/3006223/pexels-photo-3006223.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                    }
                     alt={routeTitle}
                   />
                 </figure>
-                <div className="p-8 flex flex-col items-start justify-center">
+                <div className="p-4 flex flex-col items-start justify-center">
                   <h2 className="text-2xl mb-4">{routeTitle}</h2>
                   <div className="mb-4">
-                    A route on Venice BLVD. There are potholes but it is mostly
+                    A route on Venice BLVD. There are potholes but it is mostlyc
                     fine.
                   </div>
-                  <div className="flex text-sm">
+                  {/* <div className="flex text-sm">
                     <b>Distance</b>: {(distance * 0.000621371).toFixed(2)} mi
-                  </div>
-                  <div className="flex text-sm">
+                  </div> */}
+                  {/* <div className="flex text-sm">
                     <b>Condition</b>: Bumpy
-                  </div>
-                  <div className="flex text-sm">
-                    <b>Location</b>: Los Angeles, CA
-                  </div>
-                  <ul className="py-4 text-sm">
-                    {routeLegs.map((leg, index) => (
-                      <li key={index}>
-                        <b>Steps</b>: {index + 1} {leg.summary}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex gap-2">
+                  </div> */}
+                  {/* <div className="flex text-sm">
+                    <b>Location</b>: {routeName}
+                  </div> */}
+
+                  <div className="flex gap-2 mt-4">
                     <button
                       className="text-sm px-4 py-2 bg-green-500 text-white rounded-full hover:bg-gray-800"
                       onClick={() => handleViewRoute(routeSlug)}
@@ -264,14 +413,14 @@ const MapboxDrawComponent = () => {
                     >
                       <ChatBubbleLeftIcon className="size-4"></ChatBubbleLeftIcon>
                     </button>
-                    <button
+                    {/* <button
                       className="text-sm px-4 py-2 bg-green-500 text-white rounded-full hover:bg-gray-800"
-                      onClick={() => handleRouteLike(index)}
+                      onClick={() => handleLikeToggle(routeId)}
                       disabled={hasLiked}
                     >
-                      
                       <HandThumbUpIcon className="size-4"></HandThumbUpIcon>
-                    </button>
+                      {isLiked ? "Unlike" : "Like"} ({likeCount})
+                    </button> */}
                     <button
                       className="text-sm px-4 py-2 bg-green-500 text-white rounded-full hover:bg-gray-800"
                       onClick={() => handleViewRoute(routeSlug)}
@@ -307,8 +456,8 @@ const MapboxDrawComponent = () => {
         <div className="mx-auto">
           <div
             ref={mapContainerRef}
-            className="rounded-md overflow-hidden"
-            style={{ width: "100%", height: "60vh" }}
+            className="rounded-lg overflow-hidden "
+            style={{ width: "100%", height: "80vh" }}
           />
         </div>
       </section>

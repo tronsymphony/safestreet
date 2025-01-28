@@ -83,7 +83,7 @@ const SingleLocationComponent = ({ params }) => {
           <Image
             width={200}
             height={200}
-            className="object-cover h-auto w-full"
+            className="object-contain h-auto w-full max-h-28"
             src={locationData.featured_image || "/default-image.jpg"}
             alt={locationData.title}
           />

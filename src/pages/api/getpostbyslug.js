@@ -2,7 +2,7 @@ import pool from '../../lib/db';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    const { slug } = req.query;
+    const { slug, user_id } = req.query; // Include user_id in the query
 
     if (!slug) {
       return res.status(400).json({ error: 'Slug is required' });
@@ -59,9 +59,29 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Associated route not found' });
       }
 
-      // Combine post data with route data
+      // Check if the user has liked the post
+      let userHasLiked = false;
+      if (user_id) {
+        const likeQuery = `
+          SELECT 
+            1 
+          FROM 
+            likes
+          WHERE 
+            route_id = $1 AND user_id = $2
+        `;
+
+        const likeResult = await pool.query(likeQuery, [post.route_id, user_id]);
+        userHasLiked = likeResult.rows.length > 0; // true if the user has liked the post
+      }
+
+      // Combine post data with route and like information
       const routeData = routeResult.rows[0];
-      const combinedData = { ...post, route: routeData.route };
+      const combinedData = { 
+        ...post, 
+        route: routeData.route, 
+        user_has_liked: userHasLiked 
+      };
 
       // Return the combined data
       res.status(200).json(combinedData);

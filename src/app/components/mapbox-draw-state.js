@@ -11,27 +11,29 @@ mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
 const MapboxDrawComponent = () => {
     const mapContainerRef = useRef(null);
-    const drawRef = useRef(null); // Use useRef to store draw control
+    const drawRef = useRef(null);
+    const mapInstance = useRef(null);
+
     const [routesData, setRoutesData] = useState([]);
     const [modalContent, setModalContent] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRouteId, setSelectedRouteId] = useState(null);
-    const [postTitle, setPostTitle] = useState(''); // State to manage post title
+    const [postTitle, setPostTitle] = useState('');
     const [postContent, setPostContent] = useState('');
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [featuredImageState, setFeaturedImageState] = useState('');
+    const [routeCondition, setRouteCondition] = useState('');
+    const [routeCity, setRouteCity] = useState('');
+    const [drawnRoute, setDrawnRoute] = useState(null);
     const [userLocation, setUserLocation] = useState({
         lat: 33.979215019959895,
         lng: -118.46648985815806
-    }); // Default location
-    const [drawnRoute, setDrawnRoute] = useState(null);
-    const mapInstance = useRef(null); // To store map instance without triggering re-renders
+    });
+
     const directionsClient = useMemo(
         () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
         []
     );
-    const [featuredImageState, setFeaturedImageState] = useState('');
-    const [routeCondition, setRouteCondition] = useState('');
-    const [routeCity, setRouteCity] = useState('');
 
     const fetchData = async () => {
         try {
@@ -43,18 +45,12 @@ const MapboxDrawComponent = () => {
         }
     };
 
-    // Handle featured image file upload
     const handleFeaturedImageStateChange = (e) => {
         const file = e.target.files[0];
-        console.log(e.target.files[0]);
-
         if (file) {
             setFeaturedImageState(file);
-        
-            // Create a temporary preview URL for the image
-            const url = URL.createObjectURL(file);
-            setPreviewUrl(url);
-          }
+            setPreviewUrl(URL.createObjectURL(file));
+        }
     };
 
     useEffect(() => {
@@ -75,7 +71,7 @@ const MapboxDrawComponent = () => {
     }, []);
 
     useEffect(() => {
-        if (mapInstance.current && routesData.routes && routesData.routes.length > 0) {
+        if (mapInstance.current && routesData.routes?.length > 0) {
             loadMultipleRoutes();
         }
     }, [routesData]);
@@ -87,16 +83,11 @@ const MapboxDrawComponent = () => {
     }, [userLocation]);
 
     useEffect(() => {
-        if (mapInstance.current) return;
-
-        if (mapContainerRef.current) {
-            initializeMap();
-        }
-
+        if (mapInstance.current || !mapContainerRef.current) return;
+        initializeMap();
     }, [userLocation]);
 
     const initializeMap = () => {
-
         mapInstance.current = new mapboxgl.Map({
             container: mapContainerRef.current,
             style: 'mapbox://styles/mapbox/streets-v11',
@@ -104,39 +95,32 @@ const MapboxDrawComponent = () => {
             zoom: 13
         });
 
-        // Initialize MapboxDraw and store it in the ref
         drawRef.current = new MapboxDraw({
             displayControlsDefault: false,
             controls: {
                 line_string: true,
                 trash: true,
             },
-            defaultMode: 'draw_line_string', // Mode for drawing line strings
+            defaultMode: 'draw_line_string',
         });
 
-        // Set the draw control in the map instance
         mapInstance.current.addControl(drawRef.current);
 
-        // Update route by snapping it to streets using the Mapbox Directions API
         const updateRoute = (e) => {
             const data = drawRef.current.getAll();
             if (data.features.length > 0) {
                 const coordinates = data.features[0].geometry.coordinates;
-                setDrawnRoute(coordinates); // Save the drawn route
-
-                // Convert the coordinates to waypoints for the Directions API
+                setDrawnRoute(coordinates);
                 if (coordinates.length >= 2) {
                     getSnappedRoute(coordinates);
                 }
             }
         };
 
-        // Listen to draw.create and draw.update events to allow route drawing and editing
         mapInstance.current.on('draw.create', updateRoute);
         mapInstance.current.on('draw.update', updateRoute);
         mapInstance.current.on('draw.delete', clearRoute);
 
-        // When the map is loaded, set up the route source and layer
         mapInstance.current.on('load', () => {
             mapInstance.current.addSource('route', {
                 type: 'geojson',
@@ -181,22 +165,17 @@ const MapboxDrawComponent = () => {
         setDrawnRoute(null);
     };
 
-    // Function to get the snapped route from the Directions API
     const getSnappedRoute = (coordinates) => {
         const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
-
-        // Get route snapped to streets
         directionsClient
             .getDirections({
-                profile: 'cycling', // Use cycling profile for biking routes
+                profile: 'cycling',
                 geometries: 'geojson',
                 waypoints: waypoints
             })
             .send()
             .then((response) => {
                 const route = response.body.routes[0].geometry;
-
-                // Update the route source with the snapped route
                 if (mapInstance.current.getSource('route')) {
                     mapInstance.current.getSource('route').setData({
                         type: 'Feature',
@@ -208,7 +187,6 @@ const MapboxDrawComponent = () => {
             .catch((err) => console.error('Error fetching directions:', err));
     };
 
-    // Save the drawn route to the API
     const saveRoute = async () => {
         if (!drawnRoute) {
             console.log("No route drawn to save.");
@@ -216,7 +194,6 @@ const MapboxDrawComponent = () => {
         }
 
         let featuredImage = '';
-
         if (featuredImageState) {
             const formData = new FormData();
             formData.append('file', featuredImageState);
@@ -233,12 +210,7 @@ const MapboxDrawComponent = () => {
             }
 
             const uploadData = await uploadRes.json();
-            
-            if (uploadRes) {
-                featuredImage = uploadData.filePath;
-            } else {
-                return;
-            }
+            featuredImage = uploadData.filePath;
         }
 
         try {
@@ -259,17 +231,15 @@ const MapboxDrawComponent = () => {
 
             const data = await response.json();
             if (response.ok) {
-                console.log('Route saved successfully!');
+                alert('Route saved successfully!');
             } else {
                 console.log(`Failed to save route: ${data.error}`);
             }
         } catch (error) {
             console.error('Error saving route:', error);
-            console.log('An error occurred while saving the route.');
         }
     };
 
-    // Handle route deletion by ID
     const deleteRoute = async () => {
         if (!selectedRouteId) return;
 
@@ -282,27 +252,25 @@ const MapboxDrawComponent = () => {
             });
 
             if (response.ok) {
-                // console.log('Route deleted successfully!');
-                setSelectedRouteId(null); // Clear the selected route ID after deletion
-                fetchData(); // Refresh the route list after deletion
+                setSelectedRouteId(null);
+                fetchData();
             } else {
                 console.log('Failed to delete the route');
             }
         } catch (error) {
             console.error('Error deleting route:', error);
-            console.log('An error occurred while deleting the route.');
         }
     };
 
     const loadMultipleRoutes = () => {
         routesData.routes?.forEach((route, index) => {
-            const coordinates = (route.route);
+            const coordinates = route.route;
             const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
-            const routeID = (route.id);
+            const routeID = route.id;
 
             directionsClient
                 .getDirections({
-                    profile: 'cycling', // Use cycling profile for RideWithGPS-style routes
+                    profile: 'cycling',
                     geometries: 'geojson',
                     waypoints: waypoints
                 })
@@ -336,9 +304,7 @@ const MapboxDrawComponent = () => {
                     });
 
                     mapInstance.current.on('click', routeId, (e) => {
-                        // const routeId = e.features[0].properties.id;
-                        setSelectedRouteId(routeID); // Set the selected route ID
-                        // console.log(`Route ${routeID} selected`);
+                        setSelectedRouteId(routeID);
                     });
 
                     mapInstance.current.on('mouseenter', routeId, () => {
@@ -355,77 +321,117 @@ const MapboxDrawComponent = () => {
         });
     };
 
-
     return (
-        <>
-            <section className="main-map">
-                <div className="container">
-                    <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }} />
-                </div>
+        <section className="p-5 bg-gray-50">
+  {/* Map Container */}
+  <div className="w-full h-[80vh] rounded-lg overflow-hidden shadow-md">
+    <div ref={mapContainerRef} className="w-full h-full" />
+  </div>
 
-                {selectedRouteId && (
-                    <button onClick={deleteRoute}>
-                        Delete Route {selectedRouteId}
-                    </button>
-                )}
+  {/* Delete Route Button (Conditional Rendering) */}
+  {selectedRouteId && (
+    <button
+      onClick={deleteRoute}
+      className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+    >
+      Delete Route {selectedRouteId}
+    </button>
+  )}
 
-                <div style={{ marginTop: '20px' }}>
-                    <div>
-                        {previewUrl && <img className='size-10' src={previewUrl} alt="Preview" />}
-                        <label className="block text-gray-700 font-medium mb-2">Featured Image</label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFeaturedImageStateChange}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
-                        />
-                    </div>
-                    <label>
-                        Route Condition:
-                        <textarea
-                            value={routeCondition}
-                            onChange={(e) => setRouteCondition(e.target.value)}
-                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                        />
-                    </label>
-                    <br />
-                    <label>
-                        Route City:
-                        <textarea
-                            value={routeCity}
-                            onChange={(e) => setRouteCity(e.target.value)}
-                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                        />
-                    </label>
+  {/* Form Container */}
+  <div className="mt-6 max-w-2xl mx-auto space-y-4">
+    {/* Featured Image Upload */}
+    <div className="space-y-2">
+      {previewUrl && (
+        <img
+          src={previewUrl}
+          alt="Preview"
+          className="w-full h-48 object-cover rounded-lg shadow-sm"
+        />
+      )}
+      <label className="block text-sm font-medium text-gray-700">
+        Featured Image
+      </label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFeaturedImageStateChange}
+        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+      />
+    </div>
 
-                    <label>
-                        Post Title:
-                        <input
-                            type="text"
-                            value={postTitle}
-                            onChange={(e) => setPostTitle(e.target.value)}
-                            style={{ marginLeft: '10px', padding: '5px', width: '300px' }}
-                        />
-                    </label>
-                    <br />
-                    <label style={{ marginTop: '10px' }}>
-                        Route Description:
-                        <textarea
-                            value={postContent}
-                            onChange={(e) => setPostContent(e.target.value)}
-                            style={{ display: 'block', width: '300px', height: '100px', marginTop: '10px', padding: '5px' }}
-                        />
-                    </label>
+    {/* Route Condition Input */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Route Condition
+      </label>
+      <textarea
+        value={routeCondition}
+        onChange={(e) => setRouteCondition(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Describe the condition of the route..."
+        rows={3}
+      />
+    </div>
 
-                    <button onClick={saveRoute} style={{ marginTop: '10px' }}>
-                        Save Route
-                    </button>
+    {/* Route City Input */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Route City
+      </label>
+      <textarea
+        value={routeCity}
+        onChange={(e) => setRouteCity(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter the city or area of the route..."
+        rows={3}
+      />
+    </div>
 
-                </div>
-            </section>
+    {/* Post Title Input */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Post Title
+      </label>
+      <input
+        type="text"
+        value={postTitle}
+        onChange={(e) => setPostTitle(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter a title for your post..."
+      />
+    </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
-        </>
+    {/* Route Description Input */}
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        Route Description
+      </label>
+      <textarea
+        value={postContent}
+        onChange={(e) => setPostContent(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Describe the route in detail..."
+        rows={5}
+      />
+    </div>
+
+    {/* Save Route Button */}
+    <button
+      onClick={saveRoute}
+      className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+    >
+      Save Route
+    </button>
+  </div>
+
+  {/* Modal Component */}
+  <Modal
+    isOpen={isModalOpen}
+    onClose={() => setIsModalOpen(false)}
+    content={modalContent}
+  />
+</section>
     );
 };
 

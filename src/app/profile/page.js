@@ -22,61 +22,78 @@ export default function ManagePage() {
   }, [router]);
 
   if (!session) {
-    return <div className="text-center mt-10">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-xl font-medium text-gray-600 animate-pulse">
+          Loading...
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto py-16 px-6 md:px-10">
-      <div className="bg-white  rounded-lg p-8">
-        <h1 className="text-3xl font-semibold text-center text-gray-800">
-          Welcome, {session.user.email}
-        </h1>
-        <h2 className="text-4xl font-bold mt-6 text-center text-gray-900">
-          Manage Your Content
-        </h2>
+    <div className="min-h-screen py-4 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="container mx-auto py-16 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8">
+          {/* Welcome Section */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl sm:text-4xl font-semibold text-gray-800">
+              Welcome, {session.user.email}
+            </h1>
+            <h2 className="text-2xl sm:text-3xl font-bold mt-4 text-gray-900">
+              Manage Your Content
+            </h2>
+            <p className="mt-2 text-gray-500">
+              Create and manage your routes, blog posts, and location posts.
+            </p>
+          </div>
 
-        <div className="flex gap-2 justify-between max-w-xl mx-auto">
-          {session?.role === "admin" && (
-            <div className="mt-12">
-              <Link href="/map/edit">
-                <button className="bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-700 transition-shadow  hover:shadow-lg">
-                  Create Route
-                </button>
-              </Link>
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-4 justify-center mb-12">
+            {session?.role === "admin" && (
+              <>
+                <Link href="/map/add">
+                  <button className="bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-700 transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+                    Create Route
+                  </button>
+                </Link>
+                <Link href="/profile/posts/add">
+                  <button className="bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-700 transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+                    Create Blog Post
+                  </button>
+                </Link>
+                <Link href="/locations/add">
+                  <button className="bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-sky-700 transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+                    Create Location Post
+                  </button>
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Content Lists */}
+          <div className="space-y-12">
+            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                Location Posts
+              </h3>
+              <LocationListPage />
             </div>
-          )}
 
-          {session?.role === "admin" && (
-            <div className="mt-12">
-
-              <Link href="profile/posts/edit">
-                <button className="bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-700 transition-shadow  hover:shadow-lg">
-                  Create Blog Post
-                </button>
-              </Link>
+            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                Blog Posts
+              </h3>
+              <PostListPage />
             </div>
-          )}
 
-          {session?.role === "admin" && (
-            <div className="mt-12">
-              <Link href="/locations/edit">
-                <button className="bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-slate-700 transition-shadow  hover:shadow-lg">
-                  Create Location Post
-                </button>
-              </Link>
+            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                Profile Blog Posts
+              </h3>
+              <ProfileBlogLoop />
             </div>
-          )}
-        </div>
-
-        <div className="mt-12">
-          <LocationListPage />
-        </div>
-
-        <div className="mt-12">
-          <PostListPage />
-        </div>
-        <div className="mt-12">
-          <ProfileBlogLoop />
+          </div>
         </div>
       </div>
     </div>

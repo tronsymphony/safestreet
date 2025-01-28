@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-
+import Image from 'next/image';
 export default function Blog() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,33 +44,45 @@ export default function Blog() {
   }
 
   return (
-    <div className="min-h-screen mt-10">
-      {/* Header */}
-      <header className="bg-white mb-10">
-        <div className="container mx-auto py-6 px-4">
-          <h1 className="text-3xl font-bold text-gray-800">My Awesome Blog</h1>
+    <div className="min-h-screen">
+
+      {/* Main Content */}
+      <header className="bg-slate-900 text-white py-10 mb-10">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-bold mb-2">My Awesome Blog</h1>
+          <p className="text-gray-300 text-lg">
+            Your source for the latest insights, tips, and stories.
+          </p>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto mt-8 px-4">
+      <main className="container mx-auto px-4">
         {posts.length === 0 ? (
-          <p>No posts available.</p>
+          <div className="text-center py-20">
+            <p className="text-xl text-gray-600">No posts available at the moment. Check back soon!</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <img
-                  className="w-full h-48 object-cover"
+              <article
+                key={post.id}
+                className="bg-white rounded-md shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              >
+                <Image
+                  width={600}
+                  height={400}
+                  className="w-full h-48 object-cover border-b-4 border-slate-500"
                   src={post.featured_image || 'https://via.placeholder.com/600x400'}
                   alt={post.title}
                 />
                 <div className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">{post.title}</h2>
-                  <p className="text-gray-600">{post.content.slice(0, 100)}...</p>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-3">
+                    {post.title}
+                  </h2>
                   <a
-                    href={`/blog/${post.slug}`} // Link to the blog post page
-                    className="text-blue-500 hover:underline mt-4 block"
+                    href={`/blog/${post.slug}`}
+                    className="inline-block px-4 py-2 text-sm font-semibold uppercase bg-sky-500 text-white rounded-full hover:bg-sky-600 transition"
                   >
                     Read More
                   </a>
@@ -80,6 +92,7 @@ export default function Blog() {
           </div>
         )}
       </main>
+
     </div>
   );
 }

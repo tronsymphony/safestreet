@@ -32,7 +32,7 @@ function RootContent({ children }) {
       <body className=" text-gray-800">
         
         <header className="bg-white">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center ox">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center ox">
             <div className={styles.logo + " flex items-center font-bold text-xl"}>
               <Link href="/" className="hover:text-sky-700 text-sm transition">
                 Safe Streets Map

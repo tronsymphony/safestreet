@@ -16,10 +16,11 @@ const Modal = ({ isOpen, onClose, content }) => {
             justifyContent: 'center',
             alignItems: 'center',
         }}>
-            <div style={{
+            <div
+            className='max-w-4xl'
+            style={{
                 background: '#fff',
                 borderRadius: '4px',
-                width: '75vw',
                 position:'relative'
             }}>
                 <button onClick={onClose} className='absolute top-4 right-4 bg-white hover:bg-yellow-400 z-20'><XMarkIcon className='size-6'></XMarkIcon></button>

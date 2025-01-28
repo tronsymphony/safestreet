@@ -11,7 +11,8 @@ exports.up = (pgm) => {
   pgm.createTable('routes', {
       id: 'id',
       route: { type: 'jsonb', notNull: true },
-      created_at: { type: 'timestamp', default: pgm.func('current_timestamp'), notNull: true }
+      created_at: { type: 'timestamp', default: pgm.func('current_timestamp'), notNull: true },
+      like_count: { type: 'integer', default: 0, notNull: true },
   });
 };
 

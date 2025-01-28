@@ -1,89 +1,115 @@
 import Head from "next/head";
-import styles from "./page.module.scss";
 
 export default function AboutPage() {
   return (
     <div>
       <Head>
-        <title>About Us | Ride with GPS</title>
+        <title>About Us | Safe Streets Map</title>
         <meta
           name="description"
-          content="Learn more about Ride with GPS, our mission, and our passion for helping people explore the world on two wheels."
+          content="Learn more about Safe Streets Map, our mission to make urban travel safer, and our passion for creating smarter and more enjoyable routes for cyclists and pedestrians."
         />
-        <meta name="keywords" content="about, Ride with GPS, biking, cycling, outdoor adventures" />
-        <meta name="author" content="Ride with GPS" />
+        <meta
+          name="keywords"
+          content="Safe Streets Map, cycling safety, urban routes, biking, route planning, pedestrian safety"
+        />
+        <meta name="author" content="Safe Streets Map" />
       </Head>
 
       <main>
         {/* Hero Section */}
-        <section className={styles.fold}>
-          <div className="container mx-auto py-16 px-4 text-center">
-            <h1 className="text-5xl font-bold text-gray-800 mb-4">About Us</h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We empower people to reconnect with nature and embark on two-wheeled adventures, promoting a healthier and more connected lifestyle.
+        <section className="bg-gradient-to-r from-gray-500 to-slate-400 text-white py-14 text-center">
+          <div className="container mx-auto">
+            <h1 className="text-5xl font-extrabold mb-4">About Us</h1>
+            <p className="text-lg max-w-3xl mx-auto leading-relaxed">
+              At Safe Streets Map, we are passionate about creating safer streets
+              and empowering cyclists and pedestrians to explore their cities with
+              confidence.
             </p>
           </div>
         </section>
 
-        {/* Who We Are Section */}
-        <section className={styles.aboutsite}>
-          <div className="container mx-auto py-16 px-4">
-            <div className={styles.blockcontainer + " mb-16"}>
-              <div className={styles.block + " text-gray-700"}>
-                <h3 className="text-3xl font-bold mb-4">Who We Are</h3>
-                <p className="text-lg leading-relaxed">
-                  Ride with GPS was founded in 2007 by Zack and Cullen, two friends who shared a love for riding bikes, exploring new roads, and building innovative software. While we've grown significantly over the years, our core mission remains the same: to inspire people to get outdoors and ride, while providing the best service for our community.
+        {/* Content Section */}
+        <section className="py-16 bg-gray-100">
+          <div className="container mx-auto px-6 lg:px-12">
+            {/* Who We Are */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                  Who We Are
+                </h2>
+                <p className="text-gray-600 leading-relaxed">
+                  Safe Streets Map was created by advocates for safer urban
+                  mobility. Our mission is to help people navigate cities safely
+                  by providing thoughtfully rated routes for cyclists and
+                  pedestrians, combining innovation with local expertise.
                 </p>
               </div>
-              <figure className={styles.image + " mt-6"}>
-                <img
-                  src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                  alt="Two cyclists enjoying a scenic ride"
-                  className="rounded-lg shadow-lg"
-                />
-              </figure>
+              <img
+                src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                alt="Cyclists enjoying a safe urban ride"
+                className="rounded-md shadow-lg"
+              />
             </div>
 
-            <div className={styles.blockcontainer + " mb-16"}>
-              <figure className={styles.image + " mt-6"}>
-                <img
-                  src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                  alt="Cyclist exploring new roads"
-                  className="rounded-lg shadow-lg"
-                />
-              </figure>
-              <div className={styles.block + " text-gray-700"}>
-                <h3 className="text-3xl font-bold mb-4">Our Journey</h3>
-                <p className="text-lg leading-relaxed">
-                  Since 2007, Ride with GPS has been on a journey to revolutionize the way people explore the outdoors on two wheels. We provide tools that allow cyclists to plan, navigate, and share their adventures, empowering riders of all levels to take on new challenges.
+            {/* Our Journey */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+              <img
+                src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                alt="Cyclist exploring a carefully planned route"
+                className="rounded-md shadow-lg"
+              />
+              <div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                  Our Journey
+                </h2>
+                <p className="text-gray-600 leading-relaxed">
+                  Since its inception, Safe Streets Map has been revolutionizing
+                  how people move through urban spaces. We provide tools that
+                  prioritize safety, allowing riders and walkers to avoid
+                  high-traffic areas and discover safer, smarter routes.
                 </p>
               </div>
             </div>
 
-            <div className={styles.blockcontainer + " mb-16"}>
-              <div className={styles.block + " text-gray-700"}>
-                <h3 className="text-3xl font-bold mb-4">Our Commitment</h3>
-                <p className="text-lg leading-relaxed">
-                  At Ride with GPS, we are committed to continuous innovation and improvement. Our team is dedicated to providing a top-notch experience for our users by offering the best tools for planning routes, navigating on the go, and sharing stories from the road.
+            {/* Our Commitment */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                  Our Commitment
+                </h2>
+                <p className="text-gray-600 leading-relaxed">
+                  We are dedicated to innovation and community. By offering
+                  advanced tools for route planning, real-time navigation, and
+                  user feedback, we ensure safer streets for everyone—one
+                  journey at a time.
                 </p>
               </div>
-              <figure className={styles.image + " mt-6"}>
-                <img
-                  src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                  alt="Riders planning their route with Ride with GPS"
-                  className="rounded-lg shadow-lg"
-                />
-              </figure>
+              <img
+                src="https://images.pexels.com/photos/276517/pexels-photo-276517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                alt="Riders reviewing their next route on Safe Streets Map"
+                className="rounded-md shadow-lg"
+              />
             </div>
           </div>
         </section>
 
-        {/* Contact Information Section */}
-        <section className={styles.contantpress + " bg-gray-100 py-12"}>
+        {/* Contact Section */}
+        <section className="bg-gray-900 text-white py-12">
           <div className="container mx-auto text-center">
-            <p className="text-lg text-gray-700">
-              For media or business inquiries, please contact us at <a href="mailto:nityahoyos@gmail.com" className="text-blue-600 hover:text-blue-800">nityahoyos@gmail.com</a>.
+            <p className="text-lg mb-4">
+              Have questions or business inquiries? Reach out to us at{" "}
+              <a
+                href="mailto:nityahoyos@gmail.com"
+                className="text-sky-400 underline hover:text-sky-500"
+              >
+                nityahoyos@gmail.com
+              </a>
+              .
             </p>
+            <button className="px-8 py-3 bg-sky-500 rounded-full font-semibold text-white hover:bg-sky-600 transition duration-300">
+              Contact Us
+            </button>
           </div>
         </section>
       </main>

@@ -23,20 +23,7 @@ async function fetchComments(postId) {
   return res.json().comments;
 }
 
-// Submit a new comment
-async function submitComment(postId, author, content, author_id) {
-  const res = await fetch(`/api/comments/${postId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ author, content, author_id }),
-  });
 
-  if (!res.ok) {
-    throw new Error('Failed to submit comment');
-  }
-
-  return res.json();
-}
 
 // Delete post
 async function deletePostById(id) {
@@ -76,8 +63,8 @@ export default function PostPage({ params }) {
       try {
         const fetchedPost = await fetchPostById(id); // Fetch post by id
         setPost(fetchedPost); // Set post data in the state
-        const fetchedComments = await fetchComments(fetchedPost.id); // Fetch comments for the post
-        setComments(fetchedComments); // Set comments in the state
+        // const fetchedComments = await fetchComments(fetchedPost.id); // Fetch comments for the post
+        // setComments(fetchedComments); // Set comments in the state
       } catch (err) {
         setError('Failed to fetch post');
         console.error('Error fetching post:', err);
