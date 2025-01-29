@@ -1,3 +1,4 @@
+'use client'
 // components/MapboxDrawComponent.js
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';

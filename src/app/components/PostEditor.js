@@ -1,3 +1,4 @@
+'use client'
 import React, { memo, useEffect, useRef } from "react";
 import EditorJS from "@editorjs/editorjs";
 import { EDITOR_JS_TOOLS } from "./tools";
@@ -27,7 +28,7 @@ const Editor = ({ data, onChange, editorblock }) => {
         ref.current.destroy();
       }
     };
-  }, []);
+  }, [data, onChange, editorblock]);
   return <div id={editorblock} />;
 };
 

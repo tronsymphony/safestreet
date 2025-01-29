@@ -2,7 +2,13 @@
 import { useState, useEffect } from 'react';
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Editor from '../../../components/Editor';
+
+import dynamic from 'next/dynamic';
+
+// Dynamically import the Editor component with SSR disabled
+const Editor = dynamic(() => import('../../../components/Editor'), {
+  ssr: false,
+});
 
 export default function CreateRegularPost() {
     const [title, setTitle] = useState('');
