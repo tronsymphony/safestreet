@@ -4,8 +4,9 @@ import Link from 'next/link';
 
 // Fetch locations from the API
 async function fetchLocations() {
-  const res = await fetch('http://localhost:3000/api/locations');
-
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const res = await fetch(`${API_URL}/api/locations`);
+  
   if (!res.ok) {
     throw new Error('Failed to fetch locations');
   }

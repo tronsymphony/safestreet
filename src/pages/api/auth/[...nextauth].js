@@ -12,34 +12,34 @@ export default NextAuth({
                 password: { label: "Password", type: "password", placeholder: "Password" },
             },
             async authorize(credentials) {
-                const { email, password } = credentials;
-
-                try {
-                    // Check if the user exists in the database
-                    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-                    if (userResult.rows.length === 0) {
-                        console.log("User not found");
-                        return null; // Return null if the user doesn't exist
-                    }
-
-                    const user = userResult.rows[0];
-
-                    // Check if the password is correct using bcrypt.compare
-                    const isMatch = await bcrypt.compare(password, user.password);
-
-                    if (!isMatch) {
-                        console.log("Invalid password");
-                        return null; // Return null if the password is incorrect
-                    }
-
-                    // Return user object (will be stored in JWT token)
-                    return { id: user.id, email: user.email, role: user.role };
-                } catch (error) {
-                    console.error("Error during user authentication:", error);
-                    return null; // Return null in case of error
+                console.log("🔍 Checking user:", credentials.email);
+            
+                const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [credentials.email]);
+            
+                if (userResult.rows.length === 0) {
+                    console.error("❌ User not found:", credentials.email);
+                    throw new Error("User not found");
                 }
-            },
+            
+                const user = userResult.rows[0];
+            
+                console.log("🔍 Checking password for user:", user.email);
+                console.log("🔐 Stored password:", user.password); // Log stored password
+                console.log("🔑 Entered password:", credentials.password);
+            
+                const isMatch = await bcrypt.compare(credentials.password, user.password);
+                console.log("🔄 Password Match Status:", isMatch);
+            
+                if (!isMatch) {
+                    console.error("❌ Invalid password for user:", credentials.email);
+                    throw new Error("Invalid password");
+                }
+            
+                console.log("✅ Authentication successful:", credentials.email);
+                return { id: user.id, email: user.email, role: user.role };
+            }
+            
+
         }),
     ],
     pages: {
@@ -49,8 +49,10 @@ export default NextAuth({
         strategy: "jwt", // Use JWT for sessions stored in cookies
     },
     jwt: {
-        secret: process.env.JWT_SECRET,  // Ensure this is set in your environment variables
+        secret: process.env.JWT_SECRET,
+        // secret: process.env.NEXTAUTH_SECRET,  // Ensure this is set in your environment variables
     },
+    debug: true,
     callbacks: {
         async jwt({ token, user }) {
             if (user) {

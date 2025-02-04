@@ -37,7 +37,8 @@ const MapboxDrawComponent = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/getroutes');
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${API_URL}/api/getroutes`);
             const data = await response.json();
             setRoutesData(data);
         } catch (error) {
@@ -244,7 +245,8 @@ const MapboxDrawComponent = () => {
         if (!selectedRouteId) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/api/deleteroute?id=${selectedRouteId}`, {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${API_URL}/api/deleteroute?id=${selectedRouteId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'

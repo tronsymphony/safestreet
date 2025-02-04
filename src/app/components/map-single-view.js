@@ -30,7 +30,8 @@ const MapboxDrawComponent = ({ post }) => {
 
     const fetchData = async (route_id) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/getroute?id=${route_id}`);
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${API_URL}/api/getroute?id=${route_id}`);
             const data = await response.json();
             setRoutesData(data);
         } catch (error) {

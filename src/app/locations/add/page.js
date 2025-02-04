@@ -27,7 +27,8 @@ const LocationMapComponent = () => {
     // Fetch existing locations
     const fetchData = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/getlocations');
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${API_URL}/api/getlocations`);
             const data = await response.json();
             setLocationsData(data);
         } catch (error) {

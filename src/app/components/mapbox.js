@@ -45,6 +45,8 @@ const MapboxDrawComponent = ({ session }) => {
   const [likeCount, setLikeCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
   const directionsClient = useMemo(
     () => MapboxDirections({ accessToken: mapboxgl.accessToken }),
     []
@@ -55,8 +57,8 @@ const MapboxDrawComponent = ({ session }) => {
     const fetchData = async () => {
       try {
         const [routesRes, locationsRes] = await Promise.all([
-          fetch("http://localhost:3000/api/getroutes"),
-          fetch("http://localhost:3000/api/locations"),
+          fetch(`${API_URL}/api/getroutes`),
+          fetch(`${API_URL}/api/locations`),
         ]);
 
         const routes = await routesRes.json();
@@ -74,8 +76,9 @@ const MapboxDrawComponent = ({ session }) => {
 
   const postRouteLike = async (routeId) => {
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const response = await fetch(
-        `http://localhost:3000/api/routes/${routeId}/like`,
+        `${API_URL}/api/routes/${routeId}/like`,
         {
           method: "POST",
         }

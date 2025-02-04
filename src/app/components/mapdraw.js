@@ -6,7 +6,7 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import MapboxDirections from '@mapbox/mapbox-sdk/services/directions';
 import Modal from './Modal';
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoibml0eWFob3lvcyIsImEiOiJjbGZ0N203ODQwNXBiM3FvbXhvd3UwcDcxIn0.auRwB9upsB10y6hEnczwAA';
+mapboxgl.accessToken = 'pk.eyJ1Ijoibml0eWFob3lvcyIsImEiOiJjbTZvbGdnZmwwZmE0Mm1vdTliZm1wdWRyIn0.9IJO1-WXoAolKYQV5VLTOw';
 
 const MapboxDrawComponent = () => {
     const mapContainerRef = useRef(null);

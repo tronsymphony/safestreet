@@ -5,7 +5,8 @@ import Editor from '../../components/PostEditor';  // Assume Editor is in /compo
 import { useRouter } from 'next/router';
 
 async function fetchPost(id) {
-  const res = await fetch(`http://localhost:3000/api/getpostbyid?id=${id}`);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const res = await fetch(`${API_URL}/api/getpostbyid?id=${id}`);
 
   if (!res.ok) {
     throw new Error('Failed to fetch post');

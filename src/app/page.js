@@ -8,6 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import HomePageHero from "./components/home-page-hero";
 import { getSession } from "next-auth/react";
+import Script from "next/script";
 
 // Fetch post by slug
 async function fetchPost(slug) {
@@ -53,9 +54,31 @@ export default function Home({ params }) {
   }, [slug]);
 
   return (
-    <main className={styles.main}>
-      <HomePageHero></HomePageHero>
-      <MapboxDrawComponent session={session}></MapboxDrawComponent>
-    </main>
+    <>
+      {/* Google Analytics Script */}
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=G-VDT7TFFJ12`}
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];  
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-VDT7TFFJ12', {
+              page_path: window.location.pathname,
+            });
+          `,
+        }}
+      />
+      <main className={styles.main}>
+        <HomePageHero></HomePageHero>
+        <MapboxDrawComponent session={session}></MapboxDrawComponent>
+      </main>
+    </>
+
   );
 }

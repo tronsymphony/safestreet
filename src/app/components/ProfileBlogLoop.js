@@ -6,9 +6,10 @@ import Image from 'next/image';
 
 // Fetch posts from the API by author if provided
 async function fetchPosts(author) {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const url = author
-    ? `http://localhost:3000/api/regularPosts?author=${encodeURIComponent(author)}`
-    : 'http://localhost:3000/api/regularPosts';
+    ? `${API_URL}/api/regularPosts?author=${encodeURIComponent(author)}`
+    : `${API_URL}/api/regularPosts`;
 
   const res = await fetch(url);
 

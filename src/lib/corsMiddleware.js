@@ -1,9 +1,9 @@
 import Cors from 'cors';
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 // Initializing the cors middleware
 const cors = Cors({
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  origin: 'http://localhost:3000', // Specify the allowed origin
+  origin: API_URL, // Specify the allowed origin
 //   credentials: true,
 });
 

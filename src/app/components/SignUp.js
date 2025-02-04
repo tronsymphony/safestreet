@@ -6,9 +6,23 @@ const SignUp = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChar;
+  };
+
   const handleSignUp = async () => {
     setMessage('');
     setError('');
+
+    if (!validatePassword(password)) {
+      setError('Password must be at least 8 characters long, include uppercase, lowercase, numbers, and special characters.');
+      return;
+    }
 
     try {
       const response = await fetch('/api/signup', {

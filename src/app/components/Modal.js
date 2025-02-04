@@ -15,6 +15,7 @@ const Modal = ({ isOpen, onClose, content }) => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            zIndex:100,
         }}>
             <div
             className='max-w-4xl'
