@@ -1,18 +1,18 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { Grid, Card, CardContent, Typography, Button, Container, Alert } from "@mui/material";
 
 // Fetch posts from the API
 async function fetchPosts() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
   const res = await fetch(`${API_URL}/api/posts`);
 
   if (!res.ok) {
-    throw new Error('Failed to fetch posts');
+    throw new Error("Failed to fetch posts");
   }
 
-  const posts = await res.json();
-  return posts;
+  return res.json();
 }
 
 export default function PostListPage() {
@@ -24,7 +24,7 @@ export default function PostListPage() {
         const postsData = await fetchPosts();
         setPosts(postsData);
       } catch (error) {
-        console.error('Error fetching posts:', error);
+        console.error("Error fetching posts:", error);
       }
     };
 
@@ -32,55 +32,54 @@ export default function PostListPage() {
   }, []);
 
   return (
-    <div className="container mx-auto py-12 px-4">
+    <Container maxWidth="lg" className="py-12">
       {/* Header Section */}
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800">Route Posts</h1>
-        <p className="text-gray-500 mt-2">Browse and manage your route posts.</p>
+        <Typography variant="h4" fontWeight={700} className="text-gray-800">
+          Route Posts
+        </Typography>
+        <Typography variant="body1" color="textSecondary" className="mt-2">
+          Browse and manage your route posts.
+        </Typography>
       </header>
 
       {/* Posts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
-          >
-            <div className="p-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-3">{post.title}</h2>
-              <p className="text-gray-500 text-sm mb-4">
-                <span className="font-medium">Posted on:</span> {new Date(post.created_at).toLocaleDateString()}
-              </p>
-              {/* Action Buttons */}
-              <div className="flex justify-between items-center">
-                <Link
-                  href={`/posts/${post.slug}`}
-                  passHref
-                  className="inline-block bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition"
-                >
-                  View
-                </Link>
-                <Link
-                  href={`/posts/edit/${post.id}`}
-                  passHref
-                  className="inline-block text-sky-500 border border-sky-500 px-4 py-2 rounded-lg hover:bg-sky-500 hover:text-white transition"
-                >
-                  Edit
-                </Link>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {posts.length > 0 ? (
+        <Grid container spacing={4}>
+          {posts.map((post) => (
+            <Grid item xs={12} sm={6} md={4} key={post.id}>
+              <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+                <CardContent>
+                  <Typography variant="h6" fontWeight={600} className="text-gray-900 mb-2">
+                    {post.title}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" className="mb-4">
+                    <strong>Posted on:</strong> {new Date(post.created_at).toLocaleDateString()}
+                  </Typography>
 
-      {/* No Posts State */}
-      {posts.length === 0 && (
-        <div className="text-center mt-12">
-          <p className="text-lg font-medium text-gray-500">
-            No posts available. Create a new one to get started!
-          </p>
-        </div>
+                  {/* Action Buttons */}
+                  <div className="flex justify-between items-center">
+                    <Link href={`/posts/${post.slug}`} passHref>
+                      <Button variant="contained" color="primary" size="small">
+                        View
+                      </Button>
+                    </Link>
+                    <Link href={`/posts/edit/${post.id}`} passHref>
+                      <Button variant="outlined" color="primary" size="small">
+                        Edit
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Alert severity="info" className="text-center mt-12">
+          No posts available. Create a new one to get started!
+        </Alert>
       )}
-    </div>
+    </Container>
   );
 }

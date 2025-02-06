@@ -9,6 +9,7 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import HomePageHero from "./components/home-page-hero";
 import { getSession } from "next-auth/react";
 import Script from "next/script";
+import { Inter } from 'next/font/google';
 
 // Fetch post by slug
 async function fetchPost(slug) {
@@ -20,6 +21,12 @@ async function fetchPost(slug) {
   const post = await res.json();
   return post;
 }
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter', 
+});
 
 export default function Home({ params }) {
   const { slug } = params;
@@ -74,9 +81,10 @@ export default function Home({ params }) {
           `,
         }}
       />
-      <main className={styles.main}>
+      <main className={`${styles.main} ${inter.className}`}>
+
         <HomePageHero></HomePageHero>
-        <MapboxDrawComponent session={session}></MapboxDrawComponent>
+        {/* <MapboxDrawComponent session={session}></MapboxDrawComponent> */}
       </main>
     </>
 

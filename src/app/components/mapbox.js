@@ -147,9 +147,9 @@ const MapboxDrawComponent = ({ session }) => {
 
         // Create a marker and add it to the map
         const userMarker = new mapboxgl.Marker()
-        .setLngLat([userLocation.lng, userLocation.lat])
-        .setPopup(
-          new mapboxgl.Popup().setHTML(`
+          .setLngLat([userLocation.lng, userLocation.lat])
+          .setPopup(
+            new mapboxgl.Popup().setHTML(`
             <div class="bg-white p-4 max-w-xs">
               <h3 class="text-lg font-semibold text-gray-800 mb-2">Your Location</h3>
               <p class="text-sm text-gray-600 mb-4">
@@ -164,19 +164,19 @@ const MapboxDrawComponent = ({ session }) => {
               </button>
             </div>
           `)
-        )
-        .addTo(map);
-      
-      // Add event listener to the button
-      userMarker.getPopup()
-      .on('open', () => {
-        document.getElementById('zoom-to-location').addEventListener('click', () => {
-          map.flyTo({
-            center: [userLocation.lng, userLocation.lat],
-            zoom: 15,
+          )
+          .addTo(map);
+
+        // Add event listener to the button
+        userMarker.getPopup()
+          .on('open', () => {
+            document.getElementById('zoom-to-location').addEventListener('click', () => {
+              map.flyTo({
+                center: [userLocation.lng, userLocation.lat],
+                zoom: 15,
+              });
+            });
           });
-        });
-      });
 
         const draw = new MapboxDraw({
           displayControlsDefault: false,
@@ -455,6 +455,16 @@ const MapboxDrawComponent = ({ session }) => {
 
   return (
     <>
+      <section className="py-14 mb-4 text-white">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-3xl font-light capitalize mb-2">
+            Safest Bike Routes Near Los Angeles
+          </h2>
+          <p className="text-gray-200 font-light">
+            Discover my personally rated bike routes around Los Angeles, carefully chosen for their safety and enjoyable riding experience.
+          </p>
+        </div>
+      </section>
       <section className="m-0  bg-slate-100">
         <div className="mx-auto">
           <div

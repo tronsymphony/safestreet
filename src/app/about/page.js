@@ -18,10 +18,10 @@ export default function AboutPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-gray-700 to-gray-500 text-white py-20 text-center">
+        <section className="bg-gradient-to-r bg-slate-900 text-white py-20 text-center">
           <div className="container mx-auto px-6">
-            <h1 className="text-5xl font-extrabold">Explore with Confidence</h1>
-            <p className="text-lg max-w-2xl mx-auto mt-4 leading-relaxed">
+            <h1 className="text-5xl font-light">Explore with Confidence</h1>
+            <p className="text-lg max-w-2xl mx-auto mt-4 leading-relaxed font-light">
               Safe Streets Map is your personalized urban guide, designed to
               help cyclists and pedestrians find the safest, most enjoyable
               routes through the city.
@@ -32,8 +32,8 @@ export default function AboutPage() {
         {/* Why Safe Streets? */}
         <section className="py-16 bg-gray-100">
           <div className="container mx-auto px-6 lg:px-12 text-center">
-            <h2 className="text-4xl font-bold text-gray-800">Why Safe Streets?</h2>
-            <p className="text-gray-600 max-w-3xl mx-auto mt-4">
+            <h2 className="text-4xl  text-gray-800 font-light">Why Safe Streets?</h2>
+            <p className="text-gray-600 max-w-3xl mx-auto mt-4 font-light">
               Finding the best way to move through a city shouldn&apos;t be a guessing game.
               Safe Streets Map offers curated, tested, and recommended routes that
               prioritize safety, efficiency, and comfort.
@@ -42,7 +42,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
               {/* Feature 1 */}
               <div className="bg-white p-4 rounded-lg">
-                <h3 className="text-2xl font-semibold text-gray-800">🚲 Safer Cycling Routes</h3>
+                <h3 className="text-2xl font-light text-gray-800">🚲 Safer Cycling Routes</h3>
                 <p className="text-gray-600 mt-2">
                   Avoid dangerous intersections, congested streets, and find the best 
                   bike-friendly paths in town.
@@ -51,7 +51,7 @@ export default function AboutPage() {
 
               {/* Feature 2 */}
               <div className="bg-white p-4 rounded-lg">
-                <h3 className="text-2xl font-semibold text-gray-800">🛣️ Smart Navigation</h3>
+                <h3 className="text-2xl font-light text-gray-800">🛣️ Smart Navigation</h3>
                 <p className="text-gray-600 mt-2">
                   Plan your journey with verified paths that minimize traffic and maximize 
                   safety and enjoyment.
@@ -60,7 +60,7 @@ export default function AboutPage() {
 
               {/* Feature 3 */}
               <div className="bg-white p-4 rounded-lg">
-                <h3 className="text-2xl font-semibold text-gray-800">🌿 Scenic & Enjoyable</h3>
+                <h3 className="text-2xl font-light text-gray-800">🌿 Scenic & Enjoyable</h3>
                 <p className="text-gray-600 mt-2">
                   Ride or walk through the most scenic and comfortable urban routes—because 
                   safety should be enjoyable too.
@@ -77,7 +77,7 @@ export default function AboutPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-              <h2 className="text-4xl font-bold text-center text-gray-800 mb-8">
+              <h2 className="text-4xl font-bold text-center text-gray-800 mb-8 font-light">
               How It Works
             </h2>
                 <p className="text-gray-700 leading-relaxed">
@@ -103,15 +103,15 @@ export default function AboutPage() {
         {/* Get Involved */}
         <section className="py-16 bg-gray-900 text-white text-center">
           <div className="container mx-auto px-6">
-            <h2 className="text-4xl font-bold mb-4">Join the Movement</h2>
-            <p className="text-lg max-w-2xl mx-auto mb-6">
+            <h2 className="text-4xl font-light mb-4">Join the Movement</h2>
+            <p className="text-lg max-w-2xl mx-auto mb-6 font-light">
               Safe Streets Map is constantly evolving. Do you have a favorite
               safe route? Want to help improve city navigation? Let&apos;s work
               together to make urban travel safer for everyone.
             </p>
             <a
-              href="mailto:nityahoyos@gmail.com"
-              className="inline-block px-8 py-3 bg-sky-500 rounded-full font-semibold text-white hover:bg-sky-600 transition duration-300"
+              href="/contact"
+              className="inline-block px-8 py-3 bg-sky-500 rounded-full font-light text-white hover:bg-sky-600 transition duration-300"
             >
               Contact Me
             </a>

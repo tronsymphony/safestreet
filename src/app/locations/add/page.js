@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import Modal from '@/app/components/Modal';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Button, TextField, Box, CircularProgress, Typography, Card, CardMedia } from "@mui/material";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
@@ -194,55 +195,66 @@ const LocationMapComponent = () => {
     }, [locationsData]);
 
     return (
-        <>
-            <section className="main-map">
-                <div ref={mapContainerRef} style={{ width: '100%', height: '80vh' }}></div>
-
-                <div style={{ marginTop: '20px' }}>
-                    <div>
-                        {previewUrl && <img src={previewUrl} alt="Preview" />}
-                        <label>Featured Image</label>
-                        <input type="file" accept="image/*" onChange={handleImageChange} />
-                    </div>
-
-                    <label>Search Address</label>
-                    <div>
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Enter an address"
-                            style={{ marginRight: '10px' }}
-                        />
-                        <button onClick={searchAddress}>Search</button>
-                    </div>
-
-                    <label>Title</label>
-                    <input
-                        type="text"
-                        value={locationDetails.title}
-                        onChange={(e) => setLocationDetails({ ...locationDetails, title: e.target.value })}
-                    />
-
-                    <label>Description</label>
-                    <textarea
-                        value={locationDetails.description}
-                        onChange={(e) => setLocationDetails({ ...locationDetails, description: e.target.value })}
-                    ></textarea>
-
-                    <label>City</label>
-                    <input
-                        type="text"
-                        value={locationDetails.city}
-                        onChange={(e) => setLocationDetails({ ...locationDetails, city: e.target.value })}
-                    />
-
-                    <button onClick={saveLocation}>Save Location</button>
-                </div>
-            </section>
-
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
-        </>
+        <section className="main-map">
+        <div ref={mapContainerRef} className="w-full h-[80vh] mb-6 rounded-lg shadow-md" />
+    
+        <Box className="flex flex-col gap-6">
+          {/* Image Preview */}
+          {previewUrl && (
+            <Card className="shadow-md">
+              <CardMedia component="img" height="150" image={previewUrl} alt="Preview" />
+            </Card>
+          )}
+    
+          {/* Image Upload */}
+          <Button variant="contained" component="label">
+            Upload Featured Image
+            <input type="file" hidden accept="image/*" onChange={handleImageChange} />
+          </Button>
+    
+          {/* Search Address */}
+          <TextField
+            label="Search Address"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Enter an address"
+            fullWidth
+          />
+          <Button variant="contained" color="primary" onClick={searchAddress}>
+            Search
+          </Button>
+    
+          {/* Location Details */}
+          <TextField
+            label="Title"
+            value={locationDetails.title}
+            onChange={(e) => setLocationDetails({ ...locationDetails, title: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="Description"
+            value={locationDetails.description}
+            onChange={(e) => setLocationDetails({ ...locationDetails, description: e.target.value })}
+            multiline
+            rows={3}
+            fullWidth
+          />
+          <TextField
+            label="City"
+            value={locationDetails.city}
+            onChange={(e) => setLocationDetails({ ...locationDetails, city: e.target.value })}
+            fullWidth
+          />
+    
+          {/* Submit Button */}
+          <Button variant="contained" color="success" onClick={saveLocation} >
+            Create Location
+          </Button>
+        </Box>
+    
+        {/* Modal Component */}
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} content={modalContent} />
+      </section>
     );
 };
 

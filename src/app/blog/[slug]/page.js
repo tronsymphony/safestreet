@@ -1,19 +1,20 @@
-'use client';
-import React, { useState, useEffect } from 'react';
+"use client";
+
+import React, { useState, useEffect } from "react";
 import MapboxDrawComponent from "../../components/map-single-view";
 import { getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { renderEditorContent } from "../../../utils/renderEditorContent";
-import Image from 'next/image';
+import Image from "next/image";
+import { Container, Typography, CircularProgress, Alert, Divider, Card } from "@mui/material";
 
 // Fetch post by slug
 async function fetchPost(slug) {
   const res = await fetch(`/api/regularPosts?slug=${slug}`);
   if (!res.ok) {
-    throw new Error('Failed to fetch post');
+    throw new Error("Failed to fetch post");
   }
-  const post = await res.json();
-  return post;
+  return res.json();
 }
 
 export default function PostPage({ params }) {
@@ -28,7 +29,8 @@ export default function PostPage({ params }) {
   useEffect(() => {
     getSession().then((session) => {
       if (!session) {
-        router.push("/auth/signin");
+        // router.push("/auth/signin");
+        setLoading(false);
       } else {
         setSession(session);
         setLoading(false);
@@ -44,72 +46,77 @@ export default function PostPage({ params }) {
 
         // Parse the JSON content if needed
         fetchedPost.content =
-          typeof fetchedPost.content === 'string'
+          typeof fetchedPost.content === "string"
             ? JSON.parse(fetchedPost.content)
             : fetchedPost.content;
 
         setPost(fetchedPost);
       } catch (err) {
-        setError('Failed to fetch post');
-        console.error('Error fetching post:', err);
+        setError("Failed to fetch post");
+        console.error("Error fetching post:", err);
       }
     };
 
     if (slug) getPost();
   }, [slug]);
 
+  // Error Handling
   if (error) {
     return (
-      <div className="container mx-auto p-6 mt-10 bg-slate-100 shadow-md rounded-lg text-center">
-        <h1 className="text-3xl font-bold text-red-500 mb-4">Error</h1>
-        <p className="text-gray-600">Could not fetch the post. Please try again later.</p>
-      </div>
+      <Container maxWidth="md" className="py-10">
+        <Alert severity="error">
+          <Typography variant="h5" fontWeight={600}>Error</Typography>
+          <Typography variant="body1">Could not fetch the post. Please try again later.</Typography>
+        </Alert>
+      </Container>
     );
   }
 
+  // Loading Indicator
   if (!post || loading) {
     return (
-      <div className="container mx-auto p-6 mt-10 bg-slate-100 shadow-md rounded-lg text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Loading...</h1>
-      </div>
+      <Container maxWidth="md" className="py-10 flex justify-center">
+        <CircularProgress color="primary" />
+      </Container>
     );
   }
 
   return (
-    <div className="mx-auto mb-20">
+    <Container maxWidth="lg" className="pb-12 pt-4">
       {/* Featured Image */}
       {post.featured_image && (
-        <div className="mb-8">
+        <Card className="shadow-md mb-8 overflow-hidden">
           <Image
             src={post.featured_image}
             alt={post.title}
             height={400}
             width={1200}
-            className="w-full max-h-96 object-contain bg-slate-400"
+            priority
+            className="w-full h-96 object-cover bg-gray-300"
           />
-        </div>
+        </Card>
       )}
 
       {/* Post Content */}
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-5xl font-extrabold text-gray-900 mb-4 tracking-tight leading-tight">
+      <Container maxWidth="md">
+        <Typography variant="h3" fontWeight={700} className="mb-3 text-gray-900">
           {post.title}
-        </h1>
-        <p className="text-sm text-gray-500 mb-6">
+        </Typography>
+        <Typography variant="body2" color="textSecondary" className="mb-4">
           Published on {new Date(post.created_at).toLocaleDateString()}
-        </p>
-        <hr className="my-6 border-gray-300" />
-        <div className="prose prose-slate max-w-none text-gray-800 leading-relaxed">
+        </Typography>
+        <Divider className="my-6" />
+        <Typography variant="body1" className="prose prose-slate max-w-none text-gray-800 leading-relaxed">
           {renderEditorContent(post.content)}
-        </div>
-      </div>
+        </Typography>
+      </Container>
 
-      {/* Footer or Map Component */}
+      {/* Map Component */}
       {post.map_location && (
-        <div className="mt-12 max-w-6xl mx-auto px-4">
+        <Container maxWidth="lg" className="mt-12">
           <MapboxDrawComponent location={post.map_location} />
-        </div>
+        </Container>
       )}
-    </div>
+    </Container>
   );
 }

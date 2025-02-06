@@ -73,24 +73,15 @@ export default function ManagePage() {
 
           {/* Content Lists */}
           <div className="space-y-12">
-            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                Location Posts
-              </h3>
+            <div className="">
               <LocationListPage />
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                Blog Posts
-              </h3>
+            <div className="">
               <PostListPage />
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                Profile Blog Posts
-              </h3>
+            <div className="">
               <ProfileBlogLoop />
             </div>
           </div>

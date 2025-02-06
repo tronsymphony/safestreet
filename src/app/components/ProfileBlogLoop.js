@@ -1,24 +1,24 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import Image from 'next/image';
+"use client";
 
-// Fetch posts from the API by author if provided
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { Grid, Card, CardMedia, CardContent, Typography, Button, Container, Alert } from "@mui/material";
+
+// Fetch posts by author
 async function fetchPosts(author) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
   const url = author
     ? `${API_URL}/api/regularPosts?author=${encodeURIComponent(author)}`
     : `${API_URL}/api/regularPosts`;
 
   const res = await fetch(url);
-
   if (!res.ok) {
-    throw new Error('Failed to fetch posts');
+    throw new Error("Failed to fetch posts");
   }
 
-  const posts = await res.json();
-  return posts;
+  return res.json();
 }
 
 export default function ProfileBlogLoop() {
@@ -28,12 +28,12 @@ export default function ProfileBlogLoop() {
   useEffect(() => {
     const getPosts = async () => {
       try {
-        const author = session?.user?.email;
-        const postsData = await fetchPosts(author);
-
-        setPosts(postsData);
+        if (session?.user?.email) {
+          const postsData = await fetchPosts(session.user.email);
+          setPosts(postsData);
+        }
       } catch (error) {
-        console.error('Error fetching posts:', error);
+        console.error("Error fetching posts:", error);
       }
     };
 
@@ -43,70 +43,76 @@ export default function ProfileBlogLoop() {
   }, [session]);
 
   return (
-    <div className="container mx-auto py-12 px-4">
+    <Container maxWidth="lg" className="py-12">
       {/* Header Section */}
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-800">Your Blog Posts</h1>
-        <p className="text-gray-500 mt-2">Manage and edit your authored blog posts here.</p>
+        <Typography variant="h4" fontWeight={700} className="text-gray-800">
+          Your Blog Posts
+        </Typography>
+        <Typography variant="body1" color="textSecondary" className="mt-2">
+          Manage and edit your authored blog posts here.
+        </Typography>
       </header>
 
       {/* Posts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {posts.length > 0 ? (
-          posts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              {/* Featured Image */}
-              {post.featured_image && (
-                <Image
-                  src={post.featured_image}
-                  alt={post.title}
-                  height={300}
-                  width={500}
-                  className="w-full h-48 object-cover rounded-t-lg"
-                />
-              )}
+      {posts.length > 0 ? (
+        <Grid container spacing={4}>
+          {posts.map((post) => (
+            <Grid item xs={12} sm={6} md={4} key={post.id}>
+              <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
+                {/* Featured Image */}
+                {post.featured_image && (
+                  <CardMedia>
+                    <Image
+                      src={post.featured_image}
+                      alt={post.title}
+                      height={300}
+                      width={500}
+                      priority
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                  </CardMedia>
+                )}
 
-              <div className="p-6">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-3">{post.title}</h2>
-                <p className="text-gray-500 text-sm mb-4">
-                  <span className="font-medium">Posted on:</span> {new Date(post.created_at).toLocaleDateString()}
-                </p>
+                {/* Post Content */}
+                <CardContent>
+                  <Typography variant="h6" fontWeight={600} className="text-gray-900 mb-2">
+                    {post.title}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" className="mb-4">
+                    <strong>Posted on:</strong> {new Date(post.created_at).toLocaleDateString()}
+                  </Typography>
 
-                {/* Action Buttons */}
-                <div className="flex justify-between items-center">
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    passHref
-                    className="inline-block bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition"
-                  >
-                    Read More
-                  </Link>
-                  <Link
-                    href={`/blog/edit/${post.id}`}
-                    passHref
-                    className="inline-block text-sky-500 border border-sky-500 px-4 py-2 rounded-lg hover:bg-sky-500 hover:text-white transition"
-                  >
-                    Edit Post
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center col-span-full">
-            <p className="text-lg font-medium text-gray-500">You have no blog posts yet. Start creating one!</p>
-            <Link
-              href="/blog/create"
-              className="mt-4 inline-block bg-sky-500 text-white px-6 py-3 rounded-lg hover:bg-sky-600 transition"
-            >
+                  {/* Action Buttons */}
+                  <div className="flex justify-between items-center">
+                    <Link href={`/blog/${post.slug}`} passHref>
+                      <Button variant="contained" color="primary" size="small">
+                        Read More
+                      </Button>
+                    </Link>
+                    <Link href={`/blog/edit/${post.id}`} passHref>
+                      <Button variant="outlined" color="primary" size="small">
+                        Edit Post
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <div className="text-center mt-12">
+          <Alert severity="info" className="mb-4">
+            You have no blog posts yet. Start creating one!
+          </Alert>
+          <Link href="/blog/create" passHref>
+            <Button variant="contained" color="primary">
               Create New Post
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
+            </Button>
+          </Link>
+        </div>
+      )}
+    </Container>
   );
 }

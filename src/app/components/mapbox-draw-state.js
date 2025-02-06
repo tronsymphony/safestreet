@@ -325,115 +325,115 @@ const MapboxDrawComponent = () => {
 
     return (
         <section className="p-5 bg-gray-50">
-  {/* Map Container */}
-  <div className="w-full h-[80vh] rounded-lg overflow-hidden shadow-md">
-    <div ref={mapContainerRef} className="w-full h-full" />
-  </div>
+            {/* Map Container */}
+            <div className="w-full h-[80vh] rounded-lg overflow-hidden shadow-md">
+                <div ref={mapContainerRef} className="w-full h-full" />
+            </div>
 
-  {/* Delete Route Button (Conditional Rendering) */}
-  {selectedRouteId && (
-    <button
-      onClick={deleteRoute}
-      className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-    >
-      Delete Route {selectedRouteId}
-    </button>
-  )}
+            {/* Delete Route Button (Conditional Rendering) */}
+            {selectedRouteId && (
+                <button
+                    onClick={deleteRoute}
+                    className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                >
+                    Delete Route {selectedRouteId}
+                </button>
+            )}
 
-  {/* Form Container */}
-  <div className="mt-6 max-w-2xl mx-auto space-y-4">
-    {/* Featured Image Upload */}
-    <div className="space-y-2">
-      {previewUrl && (
-        <img
-          src={previewUrl}
-          alt="Preview"
-          className="w-full h-48 object-cover rounded-lg shadow-sm"
-        />
-      )}
-      <label className="block text-sm font-medium text-gray-700">
-        Featured Image
-      </label>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFeaturedImageStateChange}
-        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-      />
-    </div>
+            {/* Form Container */}
+            <div className="my-12 max-w-2xl mx-auto space-y-4">
+                {/* Featured Image Upload */}
+                <div className="space-y-2">
+                    {previewUrl && (
+                        <img
+                            src={previewUrl}
+                            alt="Preview"
+                            className="w-full h-48 object-cover rounded-lg shadow-sm"
+                        />
+                    )}
+                    <label className="block text-sm font-medium text-gray-700">
+                        Featured Image
+                    </label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFeaturedImageStateChange}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                </div>
 
-    {/* Route Condition Input */}
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        Route Condition
-      </label>
-      <textarea
-        value={routeCondition}
-        onChange={(e) => setRouteCondition(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Describe the condition of the route..."
-        rows={3}
-      />
-    </div>
+                {/* Route Condition Input */}
+                <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                        Route Condition
+                    </label>
+                    <textarea
+                        value={routeCondition}
+                        onChange={(e) => setRouteCondition(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Describe the condition of the route..."
+                        rows={3}
+                    />
+                </div>
 
-    {/* Route City Input */}
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        Route City
-      </label>
-      <textarea
-        value={routeCity}
-        onChange={(e) => setRouteCity(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Enter the city or area of the route..."
-        rows={3}
-      />
-    </div>
+                {/* Route City Input */}
+                <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                        Route City
+                    </label>
+                    <textarea
+                        value={routeCity}
+                        onChange={(e) => setRouteCity(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter the city or area of the route..."
+                        rows={3}
+                    />
+                </div>
 
-    {/* Post Title Input */}
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        Post Title
-      </label>
-      <input
-        type="text"
-        value={postTitle}
-        onChange={(e) => setPostTitle(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Enter a title for your post..."
-      />
-    </div>
+                {/* Post Title Input */}
+                <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                        Post Title
+                    </label>
+                    <input
+                        type="text"
+                        value={postTitle}
+                        onChange={(e) => setPostTitle(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter a title for your post..."
+                    />
+                </div>
 
-    {/* Route Description Input */}
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        Route Description
-      </label>
-      <textarea
-        value={postContent}
-        onChange={(e) => setPostContent(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        placeholder="Describe the route in detail..."
-        rows={5}
-      />
-    </div>
+                {/* Route Description Input */}
+                <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                        Route Description
+                    </label>
+                    <textarea
+                        value={postContent}
+                        onChange={(e) => setPostContent(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Describe the route in detail..."
+                        rows={5}
+                    />
+                </div>
 
-    {/* Save Route Button */}
-    <button
-      onClick={saveRoute}
-      className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-    >
-      Save Route
-    </button>
-  </div>
+                {/* Save Route Button */}
+                <button
+                    onClick={saveRoute}
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Save Route
+                </button>
+            </div>
 
-  {/* Modal Component */}
-  <Modal
-    isOpen={isModalOpen}
-    onClose={() => setIsModalOpen(false)}
-    content={modalContent}
-  />
-</section>
+            {/* Modal Component */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                content={modalContent}
+            />
+        </section>
     );
 };
 

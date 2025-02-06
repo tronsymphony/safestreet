@@ -1,8 +1,8 @@
 'use client';
 
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -72,6 +72,13 @@ export default function Login() {
             Login
           </button>
         </form>
+
+        <button
+          onClick={() => signIn("google")}
+          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition mb-4 mt-4"
+        >
+          Sign in with Google
+        </button>
       </div>
     </div>
   );
