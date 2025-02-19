@@ -10,13 +10,13 @@ exports.shorthands = undefined;
 exports.up = (pgm) => {
   // Create the 'comments' table with all required columns
   pgm.createTable('comments', {
-    id: 'id',
-    page_id: { type: 'integer', notNull: true }, // ID of the associated post or blog_post
+    id: { type: "uuid", primaryKey: true, default: pgm.func("gen_random_uuid()") },
+    page_id: { type: 'uuid', notNull: true }, // ✅ Ensure this matches posts.id or blog_posts.id
     page_type: { type: 'varchar(50)', notNull: true }, // Type: 'post' or 'blog_post'
     author_id: {
-      type: 'integer',
+      type: 'uuid', // ✅ Match users.id type
       notNull: true,
-      references: '"users"',
+      references: 'users(id)',
       onDelete: 'CASCADE', // If a user is deleted, their comments are also deleted
     },
     author: { type: 'varchar(255)', notNull: true },

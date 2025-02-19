@@ -5,13 +5,14 @@ import MapboxDrawComponent from "../../components/map-single-view";
 import { getSession } from "next-auth/react";
 import Image from "next/image";
 
-async function fetchPost(slug, userId) {
+async function fetchPost(slug, userId = null) { // ✅ Default value added
   const res = await fetch(`/api/getpostbyslug?slug=${slug}&user_id=${userId}`);
   if (!res.ok) {
     throw new Error("Failed to fetch post");
   }
   return res.json();
 }
+
 
 async function toggleLike(routeId, isLiked, userId) {
   const res = await fetch(`/api/toggleLike`, {
@@ -46,16 +47,17 @@ export default function PostPage({ params }) {
   const [error, setError] = useState(null);
   const [session, setSession] = useState(null);
 
+  
   useEffect(() => {
     const init = async () => {
-      const userSession = await getSession(); // Check if user is logged in
-      setSession(userSession || null); // Allow null session for non-logged-in users
-
+      const userSession = await getSession();
+      setSession(userSession || null);
+  
       try {
-        const fetchedPost = await fetchPost(slug,userSession.id);
+        const fetchedPost = await fetchPost(slug, userSession?.user?.id || null); // ✅ Pass null if not logged in
         setPost(fetchedPost);
         setLikeCount(fetchedPost.like_count || 0);
-        setIsLiked(fetchedPost.user_has_liked || false); // Set initial like state
+        setIsLiked(fetchedPost.user_has_liked || false);
         const fetchedComments = await fetchComments(fetchedPost.post_id);
         setComments(fetchedComments || []);
       } catch (err) {
@@ -67,17 +69,18 @@ export default function PostPage({ params }) {
     };
     init();
   }, [slug]);
+  
 
   const handleLikeToggle = async () => {
     if (!session) {
       alert("You must be logged in to like this post.");
       return;
     }
-
+  
     if (!post?.route_id) return;
-
+  
     try {
-      const updatedData = await toggleLike(post.route_id, isLiked, session.id);
+      const updatedData = await toggleLike(post.route_id, isLiked, session.user.id); // ✅ Fix user ID
       setLikeCount(updatedData.like_count);
       setIsLiked(!isLiked);
     } catch (err) {
@@ -85,35 +88,36 @@ export default function PostPage({ params }) {
       alert("Failed to toggle like.");
     }
   };
+  
 
   const handleCommentSubmit = async () => {
     if (!session) {
       alert("You must be logged in to submit a comment.");
       return;
     }
-
+  
     if (!newComment.trim()) {
       alert("Comment cannot be empty!");
       return;
     }
-
+  
     try {
       const res = await fetch("/api/addcomment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          page_id: post.post_id, // Dynamic post ID
-          page_type: "post", // Specify the type
-          author_id: session.id, // Use the logged-in user's ID
-          author: session.user.email, // Use the logged-in user's name
+          page_id: post.post_id, // ✅ Ensure this is correct
+          page_type: "post",
+          author_id: session.user.id, // ✅ Fix user ID retrieval
+          author: session.user.email,
           content: newComment,
         }),
       });
-
+  
       if (!res.ok) {
         throw new Error("Failed to add comment");
       }
-
+  
       const newCommentData = await res.json();
       setComments((prev) => [newCommentData, ...prev]);
       setNewComment("");
@@ -122,6 +126,7 @@ export default function PostPage({ params }) {
       alert("Failed to submit comment.");
     }
   };
+  
 
   if (error) {
     return <div className="text-center mt-10">{error}</div>;
@@ -130,6 +135,8 @@ export default function PostPage({ params }) {
   if (loading) {
     return <div className="text-center mt-10">Loading...</div>;
   }
+  
+  if (!slug) return <div className="text-center mt-10">Invalid post.</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 pb-4">

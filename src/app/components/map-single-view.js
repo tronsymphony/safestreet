@@ -159,15 +159,18 @@ const MapboxDrawComponent = ({ post }) => {
 
 
     const loadMultipleRoutes = () => {
-        routesData.route?.forEach((route, index) => {
-            const coordinates = route.route
+        
+        routesData?.route?.forEach((route, index) => {
+            const coordinates = route.coordinates;
+            console.log(route);
+            
 
             const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
             const routeID = route.id;
 
             directionsClient
                 .getDirections({
-                    profile: 'cycling', // Use cycling profile for RideWithGPS-style routes
+                    profile: 'cycling', 
                     geometries: 'geojson',
                     waypoints: waypoints
                 })

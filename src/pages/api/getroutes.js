@@ -10,12 +10,21 @@ export default async function handler(req, res) {
     try {
       // Join routes with posts to get the slug
       const result = await pool.query(`
-        SELECT routes.id, routes.route, routes.created_at, posts.slug, posts.title,featured_image,route_condition,route_city
+        SELECT 
+          routes.id, 
+          routes.coordinates AS route, 
+          routes.created_at, 
+          posts.slug, 
+          posts.title,
+          posts.featured_image,
+          posts.route_condition,
+          posts.route_city
         FROM routes 
         LEFT JOIN posts ON posts.route_id = routes.id
         ORDER BY routes.id DESC 
         LIMIT 100
       `);
+      
 
       if (result.rows.length > 0) {
         res.status(200).json({ routes: result.rows });
