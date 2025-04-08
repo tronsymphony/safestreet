@@ -1,15 +1,18 @@
 import pool from "../../lib/db";
 
+// ✅ Helper function to check if a string is a valid UUID
+const isValidUUID = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 export default async function handler(req, res) {
   if (req.method === "GET") {
-    const { slug, user_id } = req.query; // Include user_id in the query
+    const { slug, user_id } = req.query;
 
     if (!slug) {
       return res.status(400).json({ error: "Slug is required" });
     }
 
     try {
-      // ✅ Fetch post details (excluding non-existent `like_count`)
+      // ✅ Fetch post details
       const postQuery = `
         SELECT 
           posts.id AS post_id,
@@ -30,7 +33,6 @@ export default async function handler(req, res) {
 
       const postResult = await pool.query(postQuery, [slug]);
 
-      // If no post is found, return a 404 error
       if (postResult.rows.length === 0) {
         return res.status(404).json({ error: "Post not found" });
       }
@@ -63,9 +65,9 @@ export default async function handler(req, res) {
       const likeCountResult = await pool.query(likeCountQuery, [post.route_id]);
       const totalLikes = parseInt(likeCountResult.rows[0]?.total_likes || 0, 10);
 
-      // ✅ Check if the user has liked the post
+      // ✅ Check if the user has liked the post (only if `user_id` is a valid UUID)
       let userHasLiked = false;
-      if (user_id) {
+      if (user_id && isValidUUID(user_id)) {
         const likeQuery = `
           SELECT 1 
           FROM likes
@@ -80,19 +82,17 @@ export default async function handler(req, res) {
       const routeData = routeResult.rows[0];
       const combinedData = {
         ...post,
-        route: routeData.coordinates, // ✅ Use correct column name
-        like_count: totalLikes, // ✅ Use dynamically fetched like count
+        route: routeData.coordinates,
+        like_count: totalLikes,
         user_has_liked: userHasLiked,
       };
 
-      // ✅ Return the combined data
       res.status(200).json(combinedData);
     } catch (error) {
       console.error("Error fetching post and route data:", error);
       res.status(500).json({ error: "Failed to fetch post and route data" });
     }
   } else {
-    // If the method is not GET, return a 405 Method Not Allowed response
     res.setHeader("Allow", ["GET"]);
     res.status(405).json({ message: "Method not allowed" });
   }

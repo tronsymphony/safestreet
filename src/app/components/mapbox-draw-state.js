@@ -170,7 +170,12 @@ const MapboxDrawComponent = () => {
   };
 
   const getSnappedRoute = (coordinates) => {
-    const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
+    console.log(coordinates);
+    
+    const waypoints = coordinates.map((coord) => ({ 
+      coordinates: coord,
+     }));
+
     directionsClient
       .getDirections({
         profile: "cycling",
@@ -264,10 +269,9 @@ const MapboxDrawComponent = () => {
 
   const deleteRoute = async () => {
     if (!selectedRouteId) return;
-
+  
     try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
       const response = await fetch(
         `${API_URL}/api/deleteroute?id=${selectedRouteId}`,
         {
@@ -277,10 +281,11 @@ const MapboxDrawComponent = () => {
           },
         }
       );
-
+  
       if (response.ok) {
-        setSelectedRouteId(null);
-        fetchData();
+        setSelectedRouteId(null); // Clear the selected route ID
+        fetchData(); // Refetch data to update the UI
+        window.location.reload();
       } else {
         console.log("Failed to delete the route");
       }
@@ -292,9 +297,11 @@ const MapboxDrawComponent = () => {
   const loadMultipleRoutes = () => {
     routesData.routes?.forEach((route, index) => {
       const coordinates = route?.coordinates | route?.route;
-      console.log(route);
       
-      const waypoints = coordinates.map((coord) => ({ coordinates: coord }));
+      const waypoints = coordinates.route?.map((coord) => ({ coordinates: coord })) || route.route?.map((coord) => ({ coordinates: coord }));
+
+      console.log(coordinates,route);
+      
       const routeID = route.id;
 
       directionsClient
@@ -359,12 +366,15 @@ const MapboxDrawComponent = () => {
       <h2 className="mb-4 text-2xl font-bold">Create Route</h2>
 
       {selectedRouteId && (
-        <button
+        <div className="flex gap-2 items-center">
+          <button
           onClick={deleteRoute}
-          className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+          className="my-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
         >
-          Delete Route {selectedRouteId}
+          Delete Route? 
         </button>
+        {selectedRouteId}
+        </div>
       )}
 
       <div className="grid md:grid-cols-2">

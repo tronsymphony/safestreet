@@ -25,7 +25,7 @@ async function fetchPost(slug) {
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter', 
+  variable: '--font-inter',
 });
 
 export default function Home({ params }) {

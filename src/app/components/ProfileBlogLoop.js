@@ -106,11 +106,6 @@ export default function ProfileBlogLoop() {
           <Alert severity="info" className="mb-4">
             You have no blog posts yet. Start creating one!
           </Alert>
-          <Link href="/blog/create" passHref>
-            <Button variant="contained" color="primary">
-              Create New Post
-            </Button>
-          </Link>
         </div>
       )}
     </Container>

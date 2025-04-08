@@ -24,7 +24,6 @@ export default async function handler(req, res) {
     }
 
     const user = userResult.rows[0];
-
     // Verify the password using bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
@@ -53,13 +52,11 @@ export default async function handler(req, res) {
       sameSite: 'strict', // Prevent CSRF attacks
     };
 
-    res.setHeader(
-      'Set-Cookie',
-      `token=${token}; ${Object.entries(cookieOptions)
-        .map(([key, value]) => `${key}=${value}`)
-        .join('; ')}`
-    );
-
+    res.setHeader("Set-Cookie", [
+      `token=${token}; HttpOnly; Path=/; Max-Age=3600; ${isProduction ? "Secure" : ""}; SameSite=Strict`,
+    ]);
+    
+    
     // Return success response with user information (excluding sensitive data)
     return res.status(200).json({
       message: 'Login successful',

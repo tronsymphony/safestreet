@@ -10,7 +10,7 @@ exports.shorthands = undefined;
 exports.up = (pgm) => {
   // Create the 'comments' table with all required columns
   pgm.createTable('comments', {
-    id: { type: "uuid", primaryKey: true, default: pgm.func("gen_random_uuid()") },
+    id: { type: "text", primaryKey: true },
     page_id: { type: 'uuid', notNull: true }, // ✅ Ensure this matches posts.id or blog_posts.id
     page_type: { type: 'varchar(50)', notNull: true }, // Type: 'post' or 'blog_post'
     author_id: {

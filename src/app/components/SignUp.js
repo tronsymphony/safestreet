@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -66,12 +67,21 @@ const SignUp = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
         <button
           onClick={handleSignUp}
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300"
         >
           Sign Up
         </button>
+
+        <button
+          onClick={() => signIn("google")}
+          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition mb-4 mt-4"
+        >
+          Sign in with Google
+        </button>
+
         {message && (
           <div className="mt-4 text-green-600 text-center">
             {message}

@@ -56,15 +56,23 @@ export const authOptions = {
   },
   debug: true,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      // Initial sign in
       if (user) {
         token.id = user.id;
-        token.role = user.role; // Include role in JWT
+        token.email = user.email;
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = { id: token.id, role: token.role }; // Ensure correct user structure
+      if (token) {
+        session.user = {
+          id: token.id,
+          email: token.email,
+          role: token.role,
+        };
+      }
       return session;
     },
   },

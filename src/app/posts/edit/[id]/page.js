@@ -50,7 +50,7 @@ export default function PostPage({ params }) {
   useEffect(() => {
     getSession().then((session) => {
       if (!session) {
-        router.push("/auth/signin");
+        router.push("/login");
       } else {
         setSession(session);
         setLoading(false); // Loading finished once session is retrieved

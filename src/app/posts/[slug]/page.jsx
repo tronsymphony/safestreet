@@ -7,14 +7,16 @@ import Image from "next/image";
 
 async function fetchPost(slug, userId = null) { // ✅ Default value added
   const res = await fetch(`/api/getpostbyslug?slug=${slug}&user_id=${userId}`);
+  
   if (!res.ok) {
     throw new Error("Failed to fetch post");
   }
   return res.json();
 }
 
-
 async function toggleLike(routeId, isLiked, userId) {
+  console.log(routeId, isLiked, userId);
+  
   const res = await fetch(`/api/toggleLike`, {
     method: isLiked ? "DELETE" : "POST",
     headers: { "Content-Type": "application/json" },

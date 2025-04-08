@@ -29,7 +29,7 @@ export default function PostPage({ params }) {
   useEffect(() => {
     getSession().then((session) => {
       if (!session) {
-        // router.push("/auth/signin");
+        // router.push("/login");
         setLoading(false);
       } else {
         setSession(session);

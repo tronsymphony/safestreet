@@ -19,14 +19,14 @@ export default function CreateRegularPost() {
     const [loading, setLoading] = useState(false); // Loading state for submission
     const [session, setSession] = useState(null);
     const router = useRouter();
-
+    
     useEffect(() => {
         getSession().then((session) => {
             if (!session) {
-                router.push("/auth/signin");
+                router.push("/login");
             } else {
                 setSession(session);
-                setAuthor(session.user.email);
+                setAuthor(session?.user?.email);
             }
         });
     }, [router]);
@@ -43,6 +43,8 @@ export default function CreateRegularPost() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        let userId = session?.user?.id;
 
         let imageUrl = '';
 
@@ -71,7 +73,7 @@ export default function CreateRegularPost() {
             const response = await fetch('/api/regularPosts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content, featuredImage: imageUrl, author }),
+                body: JSON.stringify({ title, content, featuredImage: imageUrl, author, userId }),
             });
 
             if (response.ok) {

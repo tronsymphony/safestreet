@@ -75,15 +75,17 @@ export default function Blog() {
               <Grid item xs={12} sm={6} md={4} key={post.id}>
                 <Card className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                   {/* Featured Image */}
-                  <CardMedia>
-                    <Image
-                      width={600}
-                      height={400}
-                      className="w-full h-48 object-cover border-b border-gray-300 rounded-t-lg"
-                      src={post.featured_image || "https://via.placeholder.com/600x400"}
-                      alt={post.title}
-                    />
-                  </CardMedia>
+                  {post?.featured_image ? (
+                    <CardMedia>
+                      <Image
+                        width={600}
+                        height={400}
+                        className="w-full h-48 object-cover border-b border-gray-300 rounded-t-lg"
+                        src={post.featured_image}
+                        alt={post.title}
+                      />
+                    </CardMedia>
+                  ) : null}
 
                   {/* Content */}
                   <CardContent>

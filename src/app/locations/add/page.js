@@ -4,6 +4,8 @@ import mapboxgl from 'mapbox-gl';
 import Modal from '@/app/components/Modal';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Button, TextField, Box, CircularProgress, Typography, Card, CardMedia } from "@mui/material";
+import { getSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_GLMAP;
 
@@ -24,6 +26,8 @@ const LocationMapComponent = () => {
     const [featuredImageState, setFeaturedImageState] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
     const [searchQuery, setSearchQuery] = useState(''); // State for search input
+    const [session, setSession] = useState(null);
+    const router = useRouter();
 
     // Fetch existing locations
     const fetchData = async () => {
@@ -36,6 +40,17 @@ const LocationMapComponent = () => {
             console.error('Error fetching locations:', error);
         }
     };
+
+    useEffect(() => {
+        getSession().then((session) => {
+            if (!session) {
+                router.push("/login");
+            } else {
+                setSession(session);
+                setAuthor(session?.user?.email);
+            }
+        });
+    }, [router]);
 
     // Handle featured image file upload
     const handleImageChange = (e) => {
